@@ -37,7 +37,9 @@ synapse densities for exc(2.16/um)*200um= 432 and inhib(.22/um)*200um= 44
 		
 
 (2) 	Future Considerations:
-
+	(2.0) Conductances: #would need to be fit to reduced order
+	Ben used a log-normal distribution with mean 0.2 nS and std of 0.345 nS for excitatory synaptic conductances. 
+	We fixed inhibitory synaptic conductances at 1 nS 
 	(2.1) adjust length of apical and basal dendrites to meet same prop as Ben's L5 (apical/basal = 7440/4640)
 	(2.2) add synapses to soma
 	(2.3) add axon
