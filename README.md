@@ -24,6 +24,9 @@ synapse densities for exc(2.16/um)*200um= 432 and inhib(.22/um)*200um= 44
 		random number uniform distribution from 0-1
 		**(choose variable name)=numpy.random.rand(# of synapses) #choose a variable (this works because cell.add_synapse location parameter is a proportion: 0-1)
 		
+		Quantity: implement use of the synapse density value instead of raw quanitity
+
+
 		assigning exc/inhib:
 		can use proportion, prop=432/476
 		Syn_type = ['exc' if y<prop else
