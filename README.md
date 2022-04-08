@@ -40,8 +40,14 @@ synapse densities for exc(2.16/um)*200um= 432 and inhib(.22/um)*200um= 44
       		  std = np.sqrt(np.log((s/m)**2 + 1))
       		  #import pdb; pdb.set_trace()
       		  return max(np.random.lognormal(mean, std, 1), 0.00000001)
+(1.5) add calcium channel, nmda, 
 
 
 
+(2) To Tune
+		stim.number
+		stim.interval
+		simulation gmax
+		
 
 
