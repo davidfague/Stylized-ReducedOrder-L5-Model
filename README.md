@@ -49,5 +49,7 @@ synapse densities for exc(2.16/um)*200um= 432 and inhib(.22/um)*200um= 44
 		stim.interval
 		simulation gmax
 		
+(3) ion channel current plots
+(4) calcium channels at where trunk and tuft meet
 
 
