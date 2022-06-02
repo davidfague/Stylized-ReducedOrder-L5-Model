@@ -20,15 +20,8 @@ class Point_current(object):
     
     
     def setup_recorder(self):
-        size = [round(h.tstop/h.dt)+1] if hasattr(h,'tstop') else []
-        try:
-            self.rec_vec = h.Vector(*size).record(self.pp_obj._ref_igaba)
-        except:
-            self.rec_vec = MultiSynCurrent()
-            vec_inmda = h.Vector(*size).record(self.pp_obj._ref_inmda)
-            vec_iampa = h.Vector(*size).record(self.pp_obj._ref_iampa)
-            self.rec_vec.add_vec(vec_inmda)
-            self.rec_vec.add_vec(vec_iampa)
+        size = [round(h.tstop / h.dt) + 1] if hasattr(h, 'tstop') else []
+        self.rec_vec = h.Vector(*size).record(self.pp_obj._ref_i)
     
     def get_section(self):
         return self.cell.all[self.sec_index]
@@ -40,13 +33,3 @@ class Point_current(object):
         """Get the index of the injection target segment in the segment list"""
         iseg = math.floor(self.get_segment().x*self.get_section().nseg)
         return self.cell.sec_id_in_seg[self.sec_index]+iseg
-
-class MultiSynCurrent(object):
-    def __init__(self):
-        self.vec_list = []
-    
-    def add_vec(self,vec):
-        self.vec_list.append(vec)
-    
-    def as_numpy(self):
-        return np.sum(np.array([vec.as_numpy() for vec in self.vec_list]), axis=0)
