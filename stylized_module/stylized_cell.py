@@ -1,7 +1,10 @@
+from abc import ABC, abstractmethod
 from neuron import h
 import math
 import numpy as np
 import pandas as pd
+from typing import List, Optional, Sequence, Dict, Union, TypeVar
+
 from stylized_module.current_injection import Current_injection
 
 h.load_file('stdrun.hoc')
@@ -29,12 +32,12 @@ class Stylized_Cell(object):
         self.injection = []
         self.set_geometry(geometry)
         self.setup_all()
-        
+
     def setup_all(self):
         if self.geometry is not None:
             self.set_morphology()
             self.set_channels()
-    
+
     def set_geometry(self,geometry):
         if geometry is None:
             self.geometry = None
@@ -44,7 +47,7 @@ class Stylized_Cell(object):
             if geometry.iloc[0]['type']!=1:
                 raise ValueError("first row of geometry must be soma")
             self.geometry = geometry.copy()
-    
+
     def set_morphology(self):
         """Create cell morphology"""
         if self.geometry is None:
@@ -54,7 +57,7 @@ class Stylized_Cell(object):
         self.all = []
         rot = 2*math.pi/self._nbranch
         for id,sec in self.geometry.iterrows():
-            start_idx = self._nsec 
+            start_idx = self._nsec
             if id==0:
                 R0 = sec['R']
                 pt0 = [0.,-2*R0,0.]
@@ -86,20 +89,20 @@ class Stylized_Cell(object):
             self.sec_id_lookup[id] = list(range(start_idx,self._nsec))
         self.set_location(self.soma,[0.,-R0,0.],[0.,R0,0.],1)
         self.store_segments()
-    
+
     def add_section(self,name='null_sec',diam=500.0):
         sec = h.Section(name=name)
         sec.diam = diam
         self.all.append(sec)
         self._nsec += 1
         return sec
-    
+
     def set_location(self,sec,pt0,pt1,nseg):
         sec.pt3dclear()
         sec.pt3dadd(*pt0,sec.diam)
         sec.pt3dadd(*pt1,sec.diam)
         sec.nseg = nseg
-    
+
     def store_segments(self):
         self.segments = []
         self.sec_id_in_seg = []
@@ -110,7 +113,7 @@ class Stylized_Cell(object):
             for seg in sec:
                 self.segments.append(seg)
         self._nseg = nseg
-    
+
     def calc_seg_coords(self):
         """Calculate segment coordinates for ECP calculation"""
         p0 = np.empty((self._nseg,3))
@@ -131,7 +134,19 @@ class Stylized_Cell(object):
         self.seg_coords['dl'] = p1-p0  # length direction vector
         self.seg_coords['pc'] = p05  # center coordinates
         self.seg_coords['r'] = r  # radius
-    
+
+    def set_spike_recorder(self, threshold: Optional[float] = 0) -> None:
+        if threshold is None:
+            self.spikes = None
+            self._record_spike = False
+        else:
+            vec = h.Vector()
+            nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma)
+            nc.threshold = threshold
+            nc.record(vec)
+            self.spikes = vec
+            self._record_spike = True
+
     def get_sec_by_id(self,index=None):
         """Get section(s) objects by index(indices) in the section list"""
         if not hasattr(index,'__len__'):
@@ -139,7 +154,7 @@ class Stylized_Cell(object):
         else:
             sec = [self.all[i] for i in index]
         return sec
-    
+
     def get_seg_by_id(self,index=None):
         """Get segment(s) objects by index(indices) in the segment list"""
         if not hasattr(index,'__len__'):
@@ -147,11 +162,11 @@ class Stylized_Cell(object):
         else:
             seg = [self.segments[i] for i in index]
         return seg
-    
+
     def set_channels(self):
         """Abstract method for setting biophysical properties, inserting channels"""
         pass
-    
+
     def set_all_passive(self,gl=0.0003):
         """A use case of 'set_channels', set all sections passive membrane"""
         for sec in self.all:
@@ -159,7 +174,7 @@ class Stylized_Cell(object):
             sec.insert('pas')
             sec.g_pas = gl
             sec.e_pas = self._vrest
-    
+
     def add_injection(self,sec_index,**kwargs):
         """Add current injection to a section by its index"""
         self.injection.append(Current_injection(self,sec_index,**kwargs))
