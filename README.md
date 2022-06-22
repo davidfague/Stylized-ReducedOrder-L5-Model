@@ -1,3 +1,8 @@
+# Electrotonic Distance
+* The notebook titled Electrotonic_Distance.ipynb has information on electrotonic distance
+
+
+
 # Stylized Reduced-Order L5 Model
  
  (1)	Synaptic input:
