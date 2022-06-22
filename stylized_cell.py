@@ -53,9 +53,10 @@ class Stylized_Cell(object):
         if self.geometry is None:
             raise ValueError("Warning: geometry is not loaded.")
         self._nsec = 0
-        rot = 2 * math.pi / self._nbranch
         for sec_id, sec in self.geometry.iterrows():
             start_idx = self._nsec
+            nbranch = sec['nbranch']
+            rot = 2 * math.pi / nbranch
             if sec_id == 0:
                 r0 = sec['R']
                 pt0 = [0., -2 * r0, 0.]
