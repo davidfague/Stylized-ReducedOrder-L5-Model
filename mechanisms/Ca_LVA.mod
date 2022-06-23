@@ -1,12 +1,12 @@
-:Comment : LVA ca channel. Note: mtau is an approximation from the plots
-:Reference : :		Avery and Johnston 1996, tau from Randall 1997
-:Comment: shifted by -10 mv to correct for junction potential
-:Comment: corrected rates using q10 = 2.3, target temperature 34, orginal 21
+: Comment: LVA ca channel. Note: mtau is an approximation from the plots
+: Reference:		Avery and Johnston 1996, tau from Randall 1997
+: Comment: shifted by -10 mv to correct for junction potential
+: Comment: corrected rates using q10 = 2.3, target temperature 34, orginal 21
 
 NEURON	{
-	SUFFIX Ca_LVAst
+	SUFFIX Ca_LVA
 	USEION ca READ eca WRITE ica
-	RANGE gCa_LVAstbar, gCa_LVAst, ical
+	RANGE gbar, g, ica
 }
 
 UNITS	{
@@ -16,19 +16,19 @@ UNITS	{
 }
 
 PARAMETER	{
-	gCa_LVAstbar = 0.00001 (S/cm2)
+	gbar = 0.00001 (S/cm2)
 }
 
 ASSIGNED	{
 	v	(mV)
 	eca	(mV)
 	ica	(mA/cm2)
-	gCa_LVAst	(S/cm2)
+	g	(S/cm2)
+	celsius (degC)
 	mInf
 	mTau
 	hInf
 	hTau
-	ical
 }
 
 STATE	{
@@ -38,10 +38,8 @@ STATE	{
 
 BREAKPOINT	{
 	SOLVE states METHOD cnexp
-	gCa_LVAst = gCa_LVAstbar*m*m*h
-	ica = gCa_LVAst*(v-eca)
-	ical = ica
-
+	g = gbar*m*m*h
+	ica = g*(v-eca)
 }
 
 DERIVATIVE states	{
@@ -58,7 +56,7 @@ INITIAL{
 
 PROCEDURE rates(){
   LOCAL qt
-  qt = 2.3^((34-21)/10)
+  qt = 2.3^((celsius-21)/10)
 
 	UNITSOFF
 		v = v + 10

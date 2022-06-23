@@ -1,25 +1,273 @@
 
 ./AlphaSynapse1.c: ../AlphaSynapse1.mod
-	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\n"
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
 	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) AlphaSynapse1.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
 
 ./AlphaSynapse1.o: ./AlphaSynapse1.c
-	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\n"
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./CaDynamics_E2.c: ../CaDynamics_E2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) CaDynamics_E2.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./CaDynamics_E2.o: ./CaDynamics_E2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./CaDynamics.c: ../CaDynamics.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) CaDynamics.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./CaDynamics.o: ./CaDynamics.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Ca_HVA.c: ../Ca_HVA.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Ca_HVA.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Ca_HVA.o: ./Ca_HVA.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Ca_LVA.c: ../Ca_LVA.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Ca_LVA.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Ca_LVA.o: ./Ca_LVA.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Ca_LVAst.c: ../Ca_LVAst.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Ca_LVAst.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Ca_LVAst.o: ./Ca_LVAst.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./epsp.c: ../epsp.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) epsp.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./epsp.o: ./epsp.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Ih.c: ../Ih.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Ih.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Ih.o: ./Ih.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Im.c: ../Im.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Im.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Im.o: ./Im.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Im_v2.c: ../Im_v2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Im_v2.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Im_v2.o: ./Im_v2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./int2pyr.c: ../int2pyr.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) int2pyr.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./int2pyr.o: ./int2pyr.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Kd.c: ../Kd.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Kd.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Kd.o: ./Kd.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./K_P.c: ../K_P.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) K_P.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./K_P.o: ./K_P.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./K_Pst.c: ../K_Pst.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) K_Pst.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./K_Pst.o: ./K_Pst.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./K_T.c: ../K_T.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) K_T.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./K_T.o: ./K_T.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./K_Tst.c: ../K_Tst.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) K_Tst.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./K_Tst.o: ./K_Tst.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Kv2like.c: ../Kv2like.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Kv2like.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Kv2like.o: ./Kv2like.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Kv3_1.c: ../Kv3_1.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Kv3_1.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Kv3_1.o: ./Kv3_1.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Nap_Et2.c: ../Nap_Et2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Nap_Et2.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Nap_Et2.o: ./Nap_Et2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./Nap.c: ../Nap.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) Nap.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./Nap.o: ./Nap.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./NaTa.c: ../NaTa.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) NaTa.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./NaTa.o: ./NaTa.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
 	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
 
 ./NaTa_t.c: ../NaTa_t.mod
-	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\n"
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
 	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) NaTa_t.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
 
 ./NaTa_t.o: ./NaTa_t.c
-	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\n"
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./NaTg.c: ../NaTg.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) NaTg.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./NaTg.o: ./NaTg.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./NaTs2_t.c: ../NaTs2_t.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) NaTs2_t.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./NaTs2_t.o: ./NaTs2_t.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./NaTs.c: ../NaTs.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) NaTs.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./NaTs.o: ./NaTs.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./NaV.c: ../NaV.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) NaV.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./NaV.o: ./NaV.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./netgaba.c: ../netgaba.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) netgaba.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./netgaba.o: ./netgaba.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./netglutamate.c: ../netglutamate.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) netglutamate.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./netglutamate.o: ./netglutamate.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./ProbAMPANMDA2.c: ../ProbAMPANMDA2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) ProbAMPANMDA2.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./ProbAMPANMDA2.o: ./ProbAMPANMDA2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./pyr2pyr.c: ../pyr2pyr.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) pyr2pyr.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./pyr2pyr.o: ./pyr2pyr.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./SK_E2.c: ../SK_E2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) SK_E2.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./SK_E2.o: ./SK_E2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./SK.c: ../SK.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) SK.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./SK.o: ./SK.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
 	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
 
 ./SKv3_1.c: ../SKv3_1.mod
-	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\n"
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
 	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) SKv3_1.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
 
 ./SKv3_1.o: ./SKv3_1.c
-	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\n"
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
+
+./vecevent.c: ../vecevent.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd ".."; MODLUNIT=$(NRNUNITS) $(NOCMODL) vecevent.mod -o "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/x86_64")
+
+./vecevent.o: ./vecevent.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
 	$(COMPILE) -I".." $(INCLUDES) -fPIC -c $< -o $@
 

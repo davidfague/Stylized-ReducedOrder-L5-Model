@@ -22,15 +22,15 @@ extern int _method3;
 extern double hoc_Exp(double);
 #endif
  
-#define nrn_init _nrn_init__SKv3_1
-#define _nrn_initial _nrn_initial__SKv3_1
-#define nrn_cur _nrn_cur__SKv3_1
-#define _nrn_current _nrn_current__SKv3_1
-#define nrn_jacob _nrn_jacob__SKv3_1
-#define nrn_state _nrn_state__SKv3_1
-#define _net_receive _net_receive__SKv3_1 
-#define rates rates__SKv3_1 
-#define states states__SKv3_1 
+#define nrn_init _nrn_init__SK
+#define _nrn_initial _nrn_initial__SK
+#define nrn_cur _nrn_cur__SK
+#define _nrn_current _nrn_current__SK
+#define nrn_jacob _nrn_jacob__SK
+#define nrn_state _nrn_state__SK
+#define _net_receive _net_receive__SK 
+#define rates rates__SK 
+#define states states__SK 
  
 #define _threadargscomma_ _p, _ppvar, _thread, _nt,
 #define _threadargsprotocomma_ double* _p, Datum* _ppvar, Datum* _thread, NrnThread* _nt,
@@ -45,19 +45,20 @@ extern double hoc_Exp(double);
  
 #define t _nt->_t
 #define dt _nt->_dt
-#define gSKv3_1bar _p[0]
+#define gbar _p[0]
 #define ik _p[1]
-#define gSKv3_1 _p[2]
-#define m _p[3]
+#define g _p[2]
+#define z _p[3]
 #define ek _p[4]
-#define mInf _p[5]
-#define mTau _p[6]
-#define Dm _p[7]
+#define cai _p[5]
+#define zInf _p[6]
+#define Dz _p[7]
 #define v _p[8]
 #define _g _p[9]
 #define _ion_ek	*_ppvar[0]._pval
 #define _ion_ik	*_ppvar[1]._pval
 #define _ion_dikdv	*_ppvar[2]._pval
+#define _ion_cai	*_ppvar[3]._pval
  
 #if MAC
 #if !defined(v)
@@ -105,25 +106,29 @@ extern void hoc_reg_nmodl_filename(int, const char*);
 }
  /* connect user functions to hoc names */
  static VoidFunc hoc_intfunc[] = {
- "setdata_SKv3_1", _hoc_setdata,
- "rates_SKv3_1", _hoc_rates,
+ "setdata_SK", _hoc_setdata,
+ "rates_SK", _hoc_rates,
  0, 0
 };
  /* declare global and static user variables */
+#define zTau zTau_SK
+ double zTau = 1;
  /* some parameters have upper and lower limits */
  static HocParmLimits _hoc_parm_limits[] = {
  0,0,0
 };
  static HocParmUnits _hoc_parm_units[] = {
- "gSKv3_1bar_SKv3_1", "S/cm2",
- "ik_SKv3_1", "mA/cm2",
- "gSKv3_1_SKv3_1", "S/cm2",
+ "zTau_SK", "ms",
+ "gbar_SK", "mho/cm2",
+ "ik_SK", "mA/cm2",
+ "g_SK", "S/cm2",
  0,0
 };
  static double delta_t = 0.01;
- static double m0 = 0;
+ static double z0 = 0;
  /* connect global user variables to hoc */
  static DoubScal hoc_scdoub[] = {
+ "zTau_SK", &zTau_SK,
  0,0
 };
  static DoubVec hoc_vdoub[] = {
@@ -141,21 +146,22 @@ static void _ode_map(int, double**, double**, double*, Datum*, double*, int);
 static void _ode_spec(NrnThread*, _Memb_list*, int);
 static void _ode_matsol(NrnThread*, _Memb_list*, int);
  
-#define _cvode_ieq _ppvar[3]._i
+#define _cvode_ieq _ppvar[4]._i
  static void _ode_matsol_instance1(_threadargsproto_);
  /* connect range variables in _p that hoc is supposed to know about */
  static const char *_mechanism[] = {
  "7.7.0",
-"SKv3_1",
- "gSKv3_1bar_SKv3_1",
+"SK",
+ "gbar_SK",
  0,
- "ik_SKv3_1",
- "gSKv3_1_SKv3_1",
+ "ik_SK",
+ "g_SK",
  0,
- "m_SKv3_1",
+ "z_SK",
  0,
  0};
  static Symbol* _k_sym;
+ static Symbol* _ca_sym;
  
 extern Prop* need_memb(Symbol*);
 
@@ -164,10 +170,10 @@ static void nrn_alloc(Prop* _prop) {
 	double *_p; Datum *_ppvar;
  	_p = nrn_prop_data_alloc(_mechtype, 10, _prop);
  	/*initialize range parameters*/
- 	gSKv3_1bar = 1e-05;
+ 	gbar = 1e-06;
  	_prop->param = _p;
  	_prop->param_size = 10;
- 	_ppvar = nrn_prop_datum_alloc(_mechtype, 4, _prop);
+ 	_ppvar = nrn_prop_datum_alloc(_mechtype, 5, _prop);
  	_prop->dparam = _ppvar;
  	/*connect ionic variables to this model*/
  prop_ion = need_memb(_k_sym);
@@ -175,6 +181,9 @@ static void nrn_alloc(Prop* _prop) {
  	_ppvar[0]._pval = &prop_ion->param[0]; /* ek */
  	_ppvar[1]._pval = &prop_ion->param[3]; /* ik */
  	_ppvar[2]._pval = &prop_ion->param[4]; /* _ion_dikdv */
+ prop_ion = need_memb(_ca_sym);
+ nrn_promote(prop_ion, 1, 0);
+ 	_ppvar[3]._pval = &prop_ion->param[1]; /* cai */
  
 }
  static void _initlists();
@@ -190,11 +199,13 @@ extern void _nrn_thread_table_reg(int, void(*)(double*, Datum*, Datum*, NrnThrea
 extern void hoc_register_tolerance(int, HocStateTolerance*, Symbol***);
 extern void _cvode_abstol( Symbol**, double*, int);
 
- void _SKv3_1_reg() {
+ void _SK_reg() {
 	int _vectorized = 1;
   _initlists();
  	ion_reg("k", -10000.);
+ 	ion_reg("ca", -10000.);
  	_k_sym = hoc_lookup("k_ion");
+ 	_ca_sym = hoc_lookup("ca_ion");
  	register_mech(_mechanism, nrn_alloc,nrn_cur, nrn_jacob, nrn_state, nrn_init, hoc_nrnpointerindex, 1);
  _mechtype = nrn_get_mechtype(_mechanism[1]);
      _nrn_setdata_reg(_mechtype, _setdata);
@@ -203,15 +214,16 @@ extern void _cvode_abstol( Symbol**, double*, int);
   hoc_reg_nmodl_text(_mechtype, nmodl_file_text);
   hoc_reg_nmodl_filename(_mechtype, nmodl_filename);
 #endif
-  hoc_register_prop_size(_mechtype, 10, 4);
+  hoc_register_prop_size(_mechtype, 10, 5);
   hoc_register_dparam_semantics(_mechtype, 0, "k_ion");
   hoc_register_dparam_semantics(_mechtype, 1, "k_ion");
   hoc_register_dparam_semantics(_mechtype, 2, "k_ion");
-  hoc_register_dparam_semantics(_mechtype, 3, "cvodeieq");
+  hoc_register_dparam_semantics(_mechtype, 3, "ca_ion");
+  hoc_register_dparam_semantics(_mechtype, 4, "cvodeieq");
  	hoc_register_cvode(_mechtype, _ode_count, _ode_map, _ode_spec, _ode_matsol);
  	hoc_register_tolerance(_mechtype, _hoc_state_tol, &_atollist);
  	hoc_register_var(hoc_scdoub, hoc_vdoub, hoc_intfunc);
- 	ivoc_help("help ?1 SKv3_1 /content/drive/MyDrive/Stylized-Cell-model/mechanisms/SKv3_1.mod\n");
+ 	ivoc_help("help ?1 SK /content/drive/MyDrive/Stylized-Cell-model/mechanisms/SK.mod\n");
  hoc_register_limits(_mechtype, _hoc_parm_limits);
  hoc_register_units(_mechtype, _hoc_parm_units);
  }
@@ -222,7 +234,7 @@ static int error;
 static int _ninits = 0;
 static int _match_recurse=1;
 static void _modl_cleanup(){ _match_recurse=1;}
-static int rates(_threadargsproto_);
+static int rates(_threadargsprotocomma_ double);
  
 static int _ode_spec1(_threadargsproto_);
 /*static int _ode_matsol1(_threadargsproto_);*/
@@ -231,28 +243,30 @@ static int _ode_spec1(_threadargsproto_);
  
 /*CVODE*/
  static int _ode_spec1 (double* _p, Datum* _ppvar, Datum* _thread, NrnThread* _nt) {int _reset = 0; {
-   rates ( _threadargs_ ) ;
-   Dm = ( mInf - m ) / mTau ;
+   rates ( _threadargscomma_ cai ) ;
+   Dz = ( zInf - z ) / zTau ;
    }
  return _reset;
 }
  static int _ode_matsol1 (double* _p, Datum* _ppvar, Datum* _thread, NrnThread* _nt) {
- rates ( _threadargs_ ) ;
- Dm = Dm  / (1. - dt*( ( ( ( - 1.0 ) ) ) / mTau )) ;
+ rates ( _threadargscomma_ cai ) ;
+ Dz = Dz  / (1. - dt*( ( ( ( - 1.0 ) ) ) / zTau )) ;
   return 0;
 }
  /*END CVODE*/
  static int states (double* _p, Datum* _ppvar, Datum* _thread, NrnThread* _nt) { {
-   rates ( _threadargs_ ) ;
-    m = m + (1. - exp(dt*(( ( ( - 1.0 ) ) ) / mTau)))*(- ( ( ( mInf ) ) / mTau ) / ( ( ( ( - 1.0 ) ) ) / mTau ) - m) ;
+   rates ( _threadargscomma_ cai ) ;
+    z = z + (1. - exp(dt*(( ( ( - 1.0 ) ) ) / zTau)))*(- ( ( ( zInf ) ) / zTau ) / ( ( ( ( - 1.0 ) ) ) / zTau ) - z) ;
    }
   return 0;
 }
  
-static int  rates ( _threadargsproto_ ) {
-    mInf = 1.0 / ( 1.0 + exp ( ( ( v - ( 18.700 ) ) / ( - 9.700 ) ) ) ) ;
-   mTau = 0.2 * 20.000 / ( 1.0 + exp ( ( ( v - ( - 46.560 ) ) / ( - 44.140 ) ) ) ) ;
-     return 0; }
+static int  rates ( _threadargsprotocomma_ double _lca ) {
+   if ( _lca < 1e-7 ) {
+     _lca = _lca + 1e-07 ;
+     }
+   zInf = 1.0 / ( 1.0 + pow( ( 0.00043 / _lca ) , 4.8 ) ) ;
+    return 0; }
  
 static void _hoc_rates(void) {
   double _r;
@@ -261,7 +275,7 @@ static void _hoc_rates(void) {
   _thread = _extcall_thread;
   _nt = nrn_threads;
  _r = 1.;
- rates ( _p, _ppvar, _thread, _nt );
+ rates ( _p, _ppvar, _thread, _nt, *getarg(1) );
  hoc_retpushx(_r);
 }
  
@@ -277,6 +291,7 @@ static void _ode_spec(NrnThread* _nt, _Memb_list* _ml, int _type) {
     _nd = _ml->_nodelist[_iml];
     v = NODEV(_nd);
   ek = _ion_ek;
+  cai = _ion_cai;
      _ode_spec1 (_p, _ppvar, _thread, _nt);
   }}
  
@@ -304,6 +319,7 @@ static void _ode_matsol(NrnThread* _nt, _Memb_list* _ml, int _type) {
     _nd = _ml->_nodelist[_iml];
     v = NODEV(_nd);
   ek = _ion_ek;
+  cai = _ion_cai;
  _ode_matsol_instance1(_threadargs_);
  }}
  extern void nrn_update_ion_pointer(Symbol*, Datum*, int, int);
@@ -311,14 +327,15 @@ static void _ode_matsol(NrnThread* _nt, _Memb_list* _ml, int _type) {
    nrn_update_ion_pointer(_k_sym, _ppvar, 0, 0);
    nrn_update_ion_pointer(_k_sym, _ppvar, 1, 3);
    nrn_update_ion_pointer(_k_sym, _ppvar, 2, 4);
+   nrn_update_ion_pointer(_ca_sym, _ppvar, 3, 1);
  }
 
 static void initmodel(double* _p, Datum* _ppvar, Datum* _thread, NrnThread* _nt) {
   int _i; double _save;{
-  m = m0;
+  z = z0;
  {
-   rates ( _threadargs_ ) ;
-   m = mInf ;
+   rates ( _threadargscomma_ cai ) ;
+   z = zInf ;
    }
  
 }
@@ -345,13 +362,14 @@ for (_iml = 0; _iml < _cntml; ++_iml) {
   }
  v = _v;
   ek = _ion_ek;
+  cai = _ion_cai;
  initmodel(_p, _ppvar, _thread, _nt);
  }
 }
 
 static double _nrn_current(double* _p, Datum* _ppvar, Datum* _thread, NrnThread* _nt, double _v){double _current=0.;v=_v;{ {
-   gSKv3_1 = gSKv3_1bar * m ;
-   ik = gSKv3_1 * ( v - ek ) ;
+   g = gbar * z ;
+   ik = g * ( v - ek ) ;
    }
  _current += ik;
 
@@ -378,6 +396,7 @@ for (_iml = 0; _iml < _cntml; ++_iml) {
     _v = NODEV(_nd);
   }
   ek = _ion_ek;
+  cai = _ion_cai;
  _g = _nrn_current(_p, _ppvar, _thread, _nt, _v + .001);
  	{ double _dik;
   _dik = ik;
@@ -446,6 +465,7 @@ for (_iml = 0; _iml < _cntml; ++_iml) {
  v=_v;
 {
   ek = _ion_ek;
+  cai = _ion_cai;
  {   states(_p, _ppvar, _thread, _nt);
   } }}
 
@@ -457,7 +477,7 @@ static void _initlists(){
  double _x; double* _p = &_x;
  int _i; static int _first = 1;
   if (!_first) return;
- _slist1[0] = &(m) - _p;  _dlist1[0] = &(Dm) - _p;
+ _slist1[0] = &(z) - _p;  _dlist1[0] = &(Dz) - _p;
 _first = 0;
 }
 
@@ -466,61 +486,63 @@ _first = 0;
 #endif
 
 #if NMODL_TEXT
-static const char* nmodl_filename = "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/SKv3_1.mod";
+static const char* nmodl_filename = "/content/drive/MyDrive/Stylized-Cell-model/mechanisms/SK.mod";
 static const char* nmodl_file_text = 
-  ":Comment :\n"
-  ":Reference : :		Characterization of a Shaw-related potassium channel family in rat brain, The EMBO Journal, vol.11, no.7,2473-2486 (1992)\n"
+  ": SK-type calcium-activated potassium current\n"
+  ": Reference : Kohler et al. 1996\n"
   "\n"
-  "NEURON	{\n"
-  "	SUFFIX SKv3_1\n"
-  "	USEION k READ ek WRITE ik\n"
-  "	RANGE gSKv3_1bar, gSKv3_1, ik \n"
+  "NEURON {\n"
+  "       SUFFIX SK\n"
+  "       USEION k READ ek WRITE ik\n"
+  "       USEION ca READ cai\n"
+  "       RANGE gbar, g, ik\n"
   "}\n"
   "\n"
-  "UNITS	{\n"
-  "	(S) = (siemens)\n"
-  "	(mV) = (millivolt)\n"
-  "	(mA) = (milliamp)\n"
+  "UNITS {\n"
+  "      (mV) = (millivolt)\n"
+  "      (mA) = (milliamp)\n"
+  "      (mM) = (milli/liter)\n"
   "}\n"
   "\n"
-  "PARAMETER	{\n"
-  "	gSKv3_1bar = 0.00001 (S/cm2) \n"
+  "PARAMETER {\n"
+  "          v            (mV)\n"
+  "          gbar = .000001 (mho/cm2)\n"
+  "          zTau = 1              (ms)\n"
+  "          ek           (mV)\n"
+  "          cai          (mM)\n"
   "}\n"
   "\n"
-  "ASSIGNED	{\n"
-  "	v	(mV)\n"
-  "	ek	(mV)\n"
-  "	ik	(mA/cm2)\n"
-  "	gSKv3_1	(S/cm2)\n"
-  "	mInf\n"
-  "	mTau\n"
+  "ASSIGNED {\n"
+  "         zInf\n"
+  "         ik            (mA/cm2)\n"
+  "         g	       (S/cm2)\n"
   "}\n"
   "\n"
-  "STATE	{ \n"
-  "	m\n"
+  "STATE {\n"
+  "      z   FROM 0 TO 1\n"
   "}\n"
   "\n"
-  "BREAKPOINT	{\n"
-  "	SOLVE states METHOD cnexp\n"
-  "	gSKv3_1 = gSKv3_1bar*m\n"
-  "	ik = gSKv3_1*(v-ek)\n"
+  "BREAKPOINT {\n"
+  "           SOLVE states METHOD cnexp\n"
+  "           g  = gbar * z\n"
+  "           ik   =  g * (v - ek)\n"
   "}\n"
   "\n"
-  "DERIVATIVE states	{\n"
-  "	rates()\n"
-  "	m' = (mInf-m)/mTau\n"
+  "DERIVATIVE states {\n"
+  "        rates(cai)\n"
+  "        z' = (zInf - z) / zTau\n"
   "}\n"
   "\n"
-  "INITIAL{\n"
-  "	rates()\n"
-  "	m = mInf\n"
+  "PROCEDURE rates(ca(mM)) {\n"
+  "          if(ca < 1e-7){\n"
+  "	              ca = ca + 1e-07\n"
+  "          }\n"
+  "          zInf = 1/(1 + (0.00043 / ca)^4.8)\n"
   "}\n"
   "\n"
-  "PROCEDURE rates(){\n"
-  "	UNITSOFF\n"
-  "		mInf =  1/(1+exp(((v -(18.700))/(-9.700))))\n"
-  "		mTau =  0.2*20.000/(1+exp(((v -(-46.560))/(-44.140))))\n"
-  "	UNITSON\n"
+  "INITIAL {\n"
+  "        rates(cai)\n"
+  "        z = zInf\n"
   "}\n"
   ;
 #endif
