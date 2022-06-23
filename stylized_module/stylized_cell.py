@@ -35,7 +35,7 @@ class Stylized_Cell(object):
 
     def setup_all(self):
         if self.geometry is not None:
-            self.set_morphology()
+            self.__create_morphology()
             self.set_channels()
 
     def set_geometry(self,geometry):
@@ -48,62 +48,64 @@ class Stylized_Cell(object):
                 raise ValueError("first row of geometry must be soma")
             self.geometry = geometry.copy()
 
-    def set_morphology(self):
+    def __create_morphology(self) -> None:
         """Create cell morphology"""
         if self.geometry is None:
-            print("Warning: geometry is not loaded.")
-            return None
+            raise ValueError("Warning: geometry is not loaded.")
         self._nsec = 0
-        self.all = []
-        rot = 2*math.pi/self._nbranch
-        for id,sec in self.geometry.iterrows():
+        for sec_id, sec in self.geometry.iterrows():
             start_idx = self._nsec
-            if id==0:
-                R0 = sec['R']
-                pt0 = [0.,-2*R0,0.]
-                pt1 = [0.,0.,0.]
-                self.soma = self.add_section(name=sec['name'],diam=2*R0)
-                self.set_location(self.soma,pt0,pt1,1)
+            nbranch = sec['nbranch']
+            rot = 2 * math.pi / nbranch
+            if sec_id == 0:
+                r0 = sec['R']
+                pt0 = [0., -2 * r0, 0.]
+                pt1 = [0., 0., 0.]
+                self.soma = self.__create_section(name=sec['name'], diam=2 * r0)
+                self.__set_location(self.soma, pt0, pt1, 1)
             else:
-                L = sec['L']
-                R = sec['R']
+                length = sec['L']
+                radius = sec['R']
                 ang = sec['ang']
-                nseg = math.ceil(L/self._dL)
-                pid = self.sec_id_lookup[sec['pid']][0]
-                psec = self.all[pid]
-                pt0 = [psec.x3d(1),psec.y3d(1),psec.z3d(1)]
+                nseg = math.ceil(length / self._dL)
+                pid = self.sec_id_lookup[sec['pid']]
                 if sec['axial']:
                     nbranch = 1
-                    X = 0
-                    pt1[1] = pt0[1]+L
+                    x = 0
+                    y = length*((ang>=0)*2-1)
                 else:
-                    nbranch = self._nbranch
-                    X = L*math.cos(ang)
-                    pt1[1] = pt0[1]+L*math.sin(ang)
+                    nbranch = sec['nbranch']#nbranch = self._nbranch
+                    x = length * math.cos(ang)
+                    y = length * math.sin(ang)
+                    if len(pid) == 1:
+                        pid = pid*nbranch
                 for i in range(nbranch):
-                    pt1[0] = pt0[0]+X*math.cos(i*rot)
-                    pt1[2] = pt0[2]+X*math.sin(i*rot)
-                    section = self.add_section(name=sec['name'],diam=2*R)
-                    section.connect(psec(1),0)
-                    self.set_location(section,pt0,pt1,nseg)
-            self.sec_id_lookup[id] = list(range(start_idx,self._nsec))
-        self.set_location(self.soma,[0.,-R0,0.],[0.,R0,0.],1)
-        self.store_segments()
+                    psec = self.all[pid[i]]
+                    pt0 = [psec.x3d(1), psec.y3d(1), psec.z3d(1)]
+                    pt1[1] = pt0[1] + y
+                    pt1[0] = pt0[0] + x * math.cos(i * rot)
+                    pt1[2] = pt0[2] + x * math.sin(i * rot)
+                    section = self.__create_section(name=sec['name'], diam=2 * radius)
+                    section.connect(psec(1), 0)
+                    self.__set_location(section, pt0, pt1, nseg)
+            self.sec_id_lookup[sec_id] = list(range(start_idx, self._nsec))
+        self.__set_location(self.soma, [0., -r0, 0.], [0., r0, 0.], 1)
+        self.__store_segments()
 
-    def add_section(self,name='null_sec',diam=500.0):
+    def __create_section(self,name='null_sec',diam=500.0):
         sec = h.Section(name=name)
         sec.diam = diam
         self.all.append(sec)
         self._nsec += 1
         return sec
 
-    def set_location(self,sec,pt0,pt1,nseg):
+    def __set_location(self,sec,pt0,pt1,nseg):
         sec.pt3dclear()
         sec.pt3dadd(*pt0,sec.diam)
         sec.pt3dadd(*pt1,sec.diam)
         sec.nseg = nseg
 
-    def store_segments(self):
+    def __store_segments(self):
         self.segments = []
         self.sec_id_in_seg = []
         nseg = 0
