@@ -8,9 +8,9 @@ Types:
 	Trunk = 5
 	Tuft = 10
 
-# Goal
-	Currently sectioning dendrites into individual pathway profiles through each branch.	
+#notes
+	Need 'Individual Paths' folders	and Trunk.swc to run L5_Morphology_Calculations
 
-	Determine the path length from single primary branching point to every terminal point, determining mean and standard deviation path length of dendrite. Also some principled approach for gather mean and std for radii.
+	Folders: Dendrites manually separated into individual pathway profiles from primary branching point to every 		terminal end using NeuTube.
+	L5_Morphology_Calculations: Compute mean length of dendrite and radii for specified sectioning. May consider 		standard deviation.
 
-NeuTube can be used for this purpose.
