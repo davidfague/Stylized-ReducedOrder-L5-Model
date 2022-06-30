@@ -1,15 +1,15 @@
 # Stylized Reduced-Order L5 Model
- 
- (1)	Synaptic input:
 
-(1.1) deliver a random Poisson distribution of stim to each synapse
+Synaptic input:
+	Find an in vivo model, preferably based on Hay et. al., that has synaptic input.
 
-(1.2) distribute synapses at random locations on the dendrites
+Electrotonic Distance:
+	Update to show mutliple frequencies: Baseline 1-5 hz, Beta rhythmic inhibition, Gamma rhythmic inhibition.
 
-(1.3) random seeding to keep the random set of values consistent between simulations
+Nexus Axial Current:
+	Record axial resistance between the nexus and adjacemt compartments, and use recorded membrane voltage to calculate axial current.
 
-(1.4) lognormal distribution for synapse conductance
+Consider the Principled Morphology notebooks
 
-(1.5) nmda/ampa and gaba synapses
-
-
+Other models:
+	Sodium learning
