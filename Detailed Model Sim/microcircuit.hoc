@@ -1,0 +1,751 @@
+// Author: Etay Hay 2014
+// Dendritic excitability and gain control in recurrent cortical microcircuits (Hay and Segev, 2014, Cerebral Cortex)
+//
+// Parallel simulation code for microcircuits of L5 thick-tufted pyramidal cells (TTCs)
+
+//====================================================== General files and tools =====================================================
+{load_file("nrngui.hoc")}
+
+
+//============================================================ general config ==========================================================
+
+initialization_tstart = startsw()
+
+strdef modelname
+strdef cmd
+strdef fileName
+objref fileObj
+
+fileObj = new File()
+
+rdSeed = 427                                                                // random seed
+Nmc = 1                                                                     // number of TTCs in the microcircuit
+condition = 0
+//  0: spontaneous
+//  1: step pulse 1.4 nA
+//  2: noisy step pulse
+//  3: step pulse 0.6 nA
+//  4: step pulse 0.4 nA
+//  5: step pulse 0.2 nA
+//  6: activation of 20% of the cells  
+//  7: activation of 40% of the cells  
+//  8: activation of 60% of the cells  
+//  9: activation of 80% of the cells  
+//  10: EPSP at soma 0.8 nA
+//  11: EPSP at soma 0.6 nA
+//  12: step pulse 0.1 nA at soma and main bifurcation
+//  13: step pulse 0.2 nA at soma and main bifurcation
+//  14: step pulse 0.3 nA at soma and main bifurcation
+//  15: step pulse 0.4 nA at soma and main bifurcation
+//  16: step pulse 0.5 nA at soma and main bifurcation
+//  17: step pulse 0.2 nA at main bifurcation
+//  18: step pulse 0.4 nA at main bifurcation
+//  19: step pulse 0.6 nA at main bifurcation
+//  20: step pulse 0.7 nA at main bifurcation
+//  21: step pulse 0.8 nA at main bifurcation
+//  22: EPSP at soma 0.4 nA
+//  23: EPSP at soma 0.2 nA
+//  24: EPSP at soma 1 nA
+//  25: spontaneous, with NMDA blocked
+//  26: step pulse 1.4 nA, with NMDA blocked
+//  27: step pulse 0.6 nA, with NMDA blocked
+//  28: step pulse 0.4 nA, with NMDA blocked
+//  29: step pulse 0.2 nA, with NMDA blocked
+
+modelnum = 1                                                                    // select model number
+connectivity = 0                                                                // network connectivity: 0 connected, 1 unconnected
+
+if (modelnum==1){                                                               // select biophysics file using model number
+	modelname = "L5PCbiophys3"                                                    // biophys files insert ion channels and gbar values
+}
+if (modelnum==2){
+	modelname = "L5PCbiophys3_2"
+}
+if (modelnum==3){
+	modelname = "L5PCbiophys3_3"
+}
+if (modelnum==4){
+	modelname = "L5PCbiophys3_4"
+}
+if (modelnum==5){
+	modelname = "L5PCbiophys3_5"
+}
+if (modelnum==6){
+	modelname = "L5PCbiophys3_6"
+}
+
+if(condition==2){
+	noisyst = 1
+} else {
+	noisyst = 0
+}
+//========================================================simulation duration==========================================================
+tstart = 2000
+timearound = 250 // (ms)                                                      simulation time before and after stimulus
+tstop = tstart+2*timearound //                                               stop stimulation after 2*timearound
+tstim = tstart+timearound //                                                 stim halfway through simulation
+v_init = -75
+rcpWeightFactor = 1.5 // the factor by which reciprocal weights are stronger than unidirectional weights
+pT2Tr = 0.06 //probability of reciprocating an existing connection to another L5bPC
+pT2T = 0.13 //probability of a L5bPC being connected to another L5bPC
+Econ = 0.0004 //excitatory synaptic conductance
+Icon = 0.001 //inhibitory synaptic conductance
+NcontE = 5 // number of excitatory synaptic contacts per connection 
+NsynE = 10000 // number of excitatory synapses
+NsynI = 2500 // number of inhibitory synapses
+rateE = 0.72 // average rate of presynaptic excitatory cells
+rateI = 7 // average rate of presynaptic inhibitory cells
+mainBifurcation = 650 //set distance of main bifurcation?
+
+
+objref tempvec
+tempvec = new Vector()
+{tempvec.append(Nmc)}
+//{tempvec.append(3)}
+{Ncells2save = tempvec.min()}
+
+//=================================================== creating neuron ================================================================
+
+{load_file("import3d.hoc")}
+
+strdef morphology_file
+morphology_file = "cell1.asc"
+
+sprint(cmd,"models/%s.hoc",modelname)
+{load_file(cmd)}
+{load_file("models/TTC.hoc")}
+
+objref MC_TTC
+objref sl //synaptic locations list
+
+//=================================================== random variables ================================================================
+
+objref rds1,rds2,rds3
+{rds1 = new Random(1000*rdSeed)}
+{rds1.uniform(0,1)} //random for microcircuit xnectivity and noisyst
+
+//=================================================== connectivity matrix ================================================================
+
+//connectivity matrix where rows=pre, cols=post
+objref conMat
+conMat = new Matrix(Nmc,Nmc)
+
+for(i=0;i<Nmc;i+=1){
+	conMat.x[i][i]=0
+}
+
+for(i=0;i<(Nmc-2);i+=1){
+	for(j=(i+1);j<Nmc;j+=1){
+		if (connectivity){
+			pcon = rds1.repick()
+			if (pcon<pT2Tr){
+				conMat.x[i][j]=rcpWeightFactor
+				conMat.x[j][i]=rcpWeightFactor
+			} else {
+				if (pcon<(pT2Tr + 0.5*pT2T)){
+					conMat.x[i][j]=1
+					conMat.x[j][i]=0
+				} else {
+					if (pcon<(pT2Tr + pT2T)){
+						conMat.x[i][j]=0
+						conMat.x[j][i]=1
+					} else {
+						conMat.x[i][j]=0
+						conMat.x[j][i]=0
+					}
+				}
+			}
+		} else {
+			conMat.x[i][j]=0
+			conMat.x[j][i]=0
+		}
+	}
+}
+
+//==================================================== presynaptic spike trains ====================================================
+
+objref preTrainList
+
+preTrainList = new List()
+
+for(i=0;i<Nmc;i+=1){
+	{rds2 = new Random(1000*rdSeed+i)}//random for presynaptic trains
+	{rds3 = new Random(1000*rdSeed+i)}//random for presynaptic trains
+	{rds2.negexp(1/rateE)}
+	{rds3.negexp(1/rateI)}
+
+	{preTrainList.append(new List())}
+
+	for(i2=0;i2<(NsynE+NsynI);i2+=1){
+		{preTrainList.o[i].append(new Vector())}
+		pst=0 //presynaptic spike time
+		while(pst < tstop){
+			if (i2<NsynE) {
+				pst+= 1000*rds2.repick()
+			} else {
+				pst+= 1000*rds3.repick()
+			}
+			{preTrainList.o[i].o[preTrainList.o[i].count()-1].append(pst)}
+		}
+	}
+}
+
+//==================================================== parallel network manager initialization =========================================
+
+{load_file("netparmpi.hoc")}
+objref epnm
+
+epnm = new ParallelNetManager(Nmc)
+{epnm.round_robin()}
+
+for(i=0;i<Nmc;i+=1){
+	if (epnm.gid_exists(i)) {
+		MC_TTC = new TTC(morphology_file)
+		epnm.register_cell(i,MC_TTC)
+		epnm.pc.gid2cell(i).initRand(1000*rdSeed+i)
+		epnm.pc.gid2cell(i).setnetworkparameters(rcpWeightFactor,Econ,Icon,NsynE,NsynI,NcontE)
+		epnm.pc.gid2cell(i).distributeSyn()
+		
+		if ((condition>=25)&&(condition<=29)){
+			for(j=0;j<NsynE;j+=1){
+				epnm.pc.gid2cell(i).synlist.o[j].tau_r_NMDA = 0.00001
+				epnm.pc.gid2cell(i).synlist.o[j].tau_d_NMDA = 0.00002
+				epnm.pc.gid2cell(i).synlist.o[j].gmax = 3*epnm.pc.gid2cell(i).synlist.o[j].gmax
+			}
+		}
+		
+		epnm.pc.gid2cell(i).setpretrains(preTrainList.o[i])
+	}
+}
+
+//========================================================== microcircuit connections =====================================================
+
+objref syninds
+
+for(i=0;i<Nmc;i+=1){
+	if (epnm.gid_exists(i)) {
+		epnm.pc.gid2cell(i).insertMCcons(conMat.getcol(i))
+	}
+}
+
+syninds = new Vector()
+for(i=0;i<Nmc;i+=1){
+	syninds.append(NsynE+NsynI)
+}
+
+// appending the microcircuit connections
+for(i=0;i<Nmc;i+=1){
+	for(j=0;j<Nmc;j+=1){
+		if (conMat.x[j][i] != 0){
+			for(jj=0;jj<NcontE;jj+=1){
+				epnm.nc_append(j,i,syninds.x[i],1,0.5)
+				syninds.x[i] +=1
+			}
+		}
+	}
+}
+
+
+//=======================================================================================================================================================
+
+// initializing the synaptic events of the background network
+for(i=0;i<Nmc;i+=1){
+	if (epnm.gid_exists(i)) {
+		{epnm.pc.gid2cell(i).queuePreTrains()}
+	}
+}
+
+//============================================================  current steps  ==========================================================================
+// A long list of conditional cases for setting the simulation stimulation
+
+
+objref st1
+
+objref stList
+stList = new List()
+
+if ((condition==1)||(condition==2)||(condition==26)){
+	for(i=0;i<Nmc;i+=1){
+		tj = 10*noisyst*rds1.repick()
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim + tj
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 1.4
+		}
+	}
+}
+
+if ((condition==3)||(condition==27)){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 0.6
+		}
+	}
+}
+
+if ((condition==4)||(condition==28)){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 0.4
+		}
+	}
+}
+
+if ((condition==5)||(condition==29)){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 0.2
+		}
+	}
+}
+
+if (condition==6){
+	for(i=0;i<Nmc*0.2;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 1.4
+		}
+	}
+}
+
+if (condition==7){
+	for(i=0;i<Nmc*0.4;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 1.4
+		}
+	}
+}
+
+if (condition==8){
+	for(i=0;i<Nmc*0.6;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 1.4
+		}
+	}
+}
+
+if (condition==9){
+	for(i=0;i<Nmc*0.8;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			stList.o[stList.count()-1].amp = 1.4
+		}
+	}
+}
+
+if (condition==10){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new epsp(0.5))
+			stList.o[stList.count()-1].onset = tstim
+			stList.o[stList.count()-1].tau0 = 0.3
+			stList.o[stList.count()-1].tau1 = 5
+			stList.o[stList.count()-1].imax = 0.8
+		}
+	}
+}
+
+if (condition==11){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new epsp(0.5))
+			stList.o[stList.count()-1].onset = tstim
+			stList.o[stList.count()-1].tau0 = 0.3
+			stList.o[stList.count()-1].tau1 = 5
+			stList.o[stList.count()-1].imax = 0.6
+		}
+	}
+}
+
+if ((condition>=12)&&(condition<=16)){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new IClamp(0.5))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+
+			if (condition==12){
+				stList.o[stList.count()-1].amp = 0.1
+			}
+			if (condition==13){
+				stList.o[stList.count()-1].amp = 0.2
+			}
+			if (condition==14){
+				stList.o[stList.count()-1].amp = 0.3
+			}
+			if (condition==15){
+				stList.o[stList.count()-1].amp = 0.4
+			}
+			if (condition==16){
+				stList.o[stList.count()-1].amp = 0.5
+			}
+
+//=================================================================================probe location===============================================================
+
+			sl = epnm.pc.gid2cell(i).locateSites("apic",mainBifurcation)                                       //locateSites function can be found in TTC.hoc
+//==============================================================================================================================================================
+
+
+			maxdiam = 0
+			for(i1=0;i1<sl.count();i1+=1){
+				dd1 = sl.o[i1].x[1]
+				dd = epnm.pc.gid2cell(i).apic[sl.o[i1].x[0]].diam(dd1)
+				if (dd > maxdiam) {
+					j = i1
+					maxdiam = dd
+				}
+			}
+
+			access epnm.pc.gid2cell(i).apic[sl.o[j].x[0]]
+			stList.append(new IClamp(sl.o[j].x[1]))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			if (condition==12){
+				stList.o[stList.count()-1].amp = 0.1
+			}
+			if (condition==13){
+				stList.o[stList.count()-1].amp = 0.2
+			}
+			if (condition==14){
+				stList.o[stList.count()-1].amp = 0.3
+			}
+			if (condition==15){
+				stList.o[stList.count()-1].amp = 0.4
+			}
+			if (condition==16){
+				stList.o[stList.count()-1].amp = 0.5
+			}
+		}
+	}
+}
+
+if ((condition>=17)&&(condition<=21)){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			sl = epnm.pc.gid2cell(i).locateSites("apic",mainBifurcation)
+
+			maxdiam = 0
+			for(i1=0;i1<sl.count();i1+=1){
+				dd1 = sl.o[i1].x[1]
+				dd = epnm.pc.gid2cell(i).apic[sl.o[i1].x[0]].diam(dd1)
+				if (dd > maxdiam) {
+					j = i1
+					maxdiam = dd
+				}
+			}
+
+			access epnm.pc.gid2cell(i).apic[sl.o[j].x[0]]
+			stList.append(new IClamp(sl.o[j].x[1]))
+			stList.o[stList.count()-1].del = tstim
+			stList.o[stList.count()-1].dur = 5
+			if (condition==17){
+				stList.o[stList.count()-1].amp = 0.2
+			}
+			if (condition==18){
+				stList.o[stList.count()-1].amp = 0.4
+			}
+			if (condition==19){
+				stList.o[stList.count()-1].amp = 0.6
+			}
+			if (condition==20){
+				stList.o[stList.count()-1].amp = 0.7
+			}
+			if (condition==21){
+				stList.o[stList.count()-1].amp = 0.8
+			}
+		}
+	}
+}
+
+if (condition==22){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new epsp(0.5))
+			stList.o[stList.count()-1].onset = tstim
+			stList.o[stList.count()-1].tau0 = 0.3
+			stList.o[stList.count()-1].tau1 = 5
+			stList.o[stList.count()-1].imax = 0.4
+		}
+	}
+}
+
+
+if (condition==23){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new epsp(0.5))
+			stList.o[stList.count()-1].onset = tstim
+			stList.o[stList.count()-1].tau0 = 0.3
+			stList.o[stList.count()-1].tau1 = 5
+			stList.o[stList.count()-1].imax = 0.2
+		}
+	}
+}
+
+
+if (condition==24){
+	for(i=0;i<Nmc;i+=1){
+		if (epnm.gid_exists(i)) {
+			access epnm.pc.gid2cell(i).soma
+			stList.append(new epsp(0.5))
+			stList.o[stList.count()-1].onset = tstim
+			stList.o[stList.count()-1].tau0 = 0.3
+			stList.o[stList.count()-1].tau1 = 5
+			stList.o[stList.count()-1].imax = 1
+		}
+	}
+}
+
+//===============================================================================================================================================================
+////===========================================================================output config files ==============================================================
+
+// connectivity matrix
+strdef outDir
+
+sprint(outDir,"simdata/%s/N%d_c%d_cond%d_seed%d",modelname,Nmc,connectivity,condition,rdSeed)
+
+sprint(cmd,"system(\"mkdir -p %s\")",outDir)
+execute(cmd)
+
+if(epnm.gid_exists(0)){
+	sprint(fileName,"%s/conmat.txt",outDir)
+	fileObj.wopen(fileName)
+	conMat.fprint(0,fileObj)
+	fileObj.close()
+}
+
+//simulation parameters
+if(epnm.gid_exists(0)){
+	sprint(fileName,"%s/simParam.txt",outDir)
+	fileObj.wopen(fileName)
+	fileObj.printf("tstop %d\n",tstop-tstart)
+	fileObj.printf("tstim %d\n",tstim-tstart)
+	fileObj.close()
+}
+
+/*
+for(i=0;i<Ncells2save;i+=1){
+	if(epnm.gid_exists(i)){
+		sprint(fileName,"%s/synConductanceN%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		nsyn = epnm.pc.gid2cell(i).synlist.count()
+		for(j=0;j<nsyn;j+=1){
+			fileObj.printf("%2.6e\n",epnm.pc.gid2cell(i).synlist.o[j].gmax)
+		}
+		fileObj.close()
+	}
+}
+*/
+
+//===============================================================================================================================================================
+//=================================================================== recording settings ========================================================================
+//===============================================================================================================================================================
+
+//================================================================= variable lists for output ===================================================================
+//example: objref variableLocationList
+                                                                                             
+objref vSomaList,vApicalList                                                                 // lists for voltage traces at Soma, Apical
+objref apcvecList, apcList                                                                   // lists for Action Potential
+objref gNaTa_tSomaList,gNaTa_tApicalList                                                     // lists for gNaTa_t traces at Soma, Apical
+objref ica_HVAApicalList,ica_LVAstApicalList                                                 // lists for ica_HVA, ica_LVAst traces at Apical
+//objref ica_HVASomaList,ica_LVAstSomaList //necessary code not implemented yet
+
+//=============================================================initialize lists for each objref===================================================================
+//example: variablelocationList = new List()
+
+apcvecList = new List()
+apcList = new List()
+vSomaList = new List()
+vApicalList = new List()
+gNaTa_tSomaList = new List()
+gNaTa_tApicalList = new List()
+ica_HVAApicalList = new List()
+ica_LVAstApicalList = new List()
+//ica_HVASomaList = new List()
+//ica_LVAstSomaList = new List()
+
+//=============================================================initalize vector lists for variables in each cell===================================================
+//example: variableLocationList.append(new Vector())
+
+for(i=0;i<Ncells2save;i+=1){ //for i cell in Ncells2save
+	if (epnm.gid_exists(i)) {                                                                  //iterate through each List appending new Vector for each cell
+		vSomaList.append(new Vector())
+		vApicalList.append(new Vector())
+    gNaTa_tSomaList.append(new Vector())
+    gNaTa_tApicalList.append(new Vector())
+    ica_HVAApicalList.append(new Vector())
+    ica_LVAstApicalList.append(new Vector())
+//=========================================================== locate sites ================================================================================
+		sl = epnm.pc.gid2cell(i).locateSites("apic",mainBifurcation)                             //find site location in cell for Apical mainBifurcation
+
+		maxdiam = 0
+		for(i1=0;i1<sl.count();i1+=1){ 
+			dd1 = sl.o[i1].x[1]
+			dd = epnm.pc.gid2cell(i).apic[sl.o[i1].x[0]].diam(dd1)
+			if (dd > maxdiam) {
+				j = i1
+				maxdiam = dd
+			}
+		}
+//========================================================== record variables into vector lists =============================================================
+//  example record: variableLocationList.o[variableLocationList.count()-1].record(&variablename_suffix(location along section),dt  //record location variable
+
+		access epnm.pc.gid2cell(i).apic[sl.o[j].x[0]]                                                //access apical
+		vApicalList.o[vApicalList.count()-1].record(&v(sl.o[j].x[1]),dt)                             //record apical voltage
+    gNaTa_tApicalList.o[gNaTa_tApicalList.count()-1].record(&gNaTa_t_NaTa_t(sl.o[j].x[1]),dt)    //record apical gNaTa_t_NaTa_t
+    ica_HVAApicalList.o[ica_HVAApicalList.count()-1].record(&ica_Ca_HVA(sl.o[j].x[1]),dt)        //record apical ica_Ca_HVA
+    ica_LVAstApicalList.o[ica_LVAstApicalList.count()-1].record(&ica_Ca_LVAst(sl.o[j].x[1]),dt)  //record apical ica_Ca_LVAst
+
+		access epnm.pc.gid2cell(i).soma                                                              //access soma
+		vSomaList.o[vSomaList.count()-1].record(&v(0.5),dt)                                          //record soma voltage
+    gNaTa_tSomaList.o[gNaTa_tSomaList.count()-1].record(&gNaTa_t_NaTa_t(0.5),dt)                 //record soma gNaTa_t_NaTa_t
+ 
+	}
+}
+//========================================================== record APcount List from soma ====================================================================
+for(i=0;i<Nmc;i+=1){ //for i in Nmc
+	if (epnm.gid_exists(i)) {
+		access epnm.pc.gid2cell(i).soma
+		apcList.append(new APCount(0.5))
+		apcvecList.append(new Vector())
+		apcList.o[apcList.count()-1].thresh= -40
+		apcList.o[apcList.count()-1].record(apcvecList.o[apcList.count()-1])
+	}
+}
+
+//========================================================================================================================================================
+//================================================================ simulation ============================================================================
+
+{epnm.set_maxstep(100)}
+
+stdinit()
+
+if (epnm.gid_exists(0)) {
+	print "\n"
+	sim_tstart = startsw()
+	initializationtime = (sim_tstart-initialization_tstart)/3600
+	print "Initialization completed. Initialization took ", initializationtime, " hours\n"
+	print "Starting simulation\n"
+	print "\n"
+}
+
+{epnm.psolve(tstop)}
+
+if (epnm.gid_exists(0)) {
+	simruntime = (startsw() - sim_tstart)/3600
+	print "Simulation took ", simruntime, " hours\n"
+}
+
+//============================================================================================================================================
+//================================================================ output ====================================================================
+// write output files for recorded variable
+
+i2=0
+
+
+for(i=0;i<Ncells2save;i+=1){
+	if (epnm.gid_exists(i)) {
+    tempvec = new Vector()
+		tempvec = vSomaList.o[i2].c(tstart/dt)                                             //change vSomaList; choose variable list
+		sprint(fileName,"%s/vSomaTraceN%d.txt",outDir,i)                                   // change vSomaTraceN0.txt; Choose the name of the  file
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+
+		tempvec = new Vector()
+		tempvec = vApicalList.o[i2].c(tstart/dt)
+		sprint(fileName,"%s/vMidApicTrace N%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+   
+    tempvec = new Vector()
+		tempvec = gNaTa_tApicalList.o[i2].c(tstart/dt)
+		sprint(fileName,"%s/gNaTa_tMidApicTraceN%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+    
+    tempvec = new Vector()
+		tempvec = gNaTa_tSomaList.o[i2].c(tstart/dt)
+		sprint(fileName,"%s/gNaTa_tSomaTraceN%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+    
+    tempvec = new Vector()
+		tempvec = ica_HVAApicalList.o[i2].c(tstart/dt)
+		sprint(fileName,"%s/ica_HVAMidApicTraceN%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+    
+    tempvec = new Vector()
+		tempvec = ica_LVAstApicalList.o[i2].c(tstart/dt)
+		sprint(fileName,"%s/ica_LVAstMidApicTraceN%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+
+		i2+=1
+	}
+}
+//Write spikeTimes file
+i2=0
+for(i=0;i<Nmc;i+=1){
+	if (epnm.gid_exists(i)) {
+		i1 = apcvecList.o[i2].indwhere(">=",tstart)
+
+		tempvec = new Vector()
+	if (i1 > -1){
+		tempvec = apcvecList.o[i2].c(i1).sub(tstart)
+	}
+		sprint(fileName,"%s/spikeTimesN%d.txt",outDir,i)
+		fileObj.wopen(fileName)
+		tempvec.printf(fileObj,"%2.6e\n")
+		fileObj.close()
+
+		i2+=1
+	}
+}
+
+{epnm.pc.runworker()}
+{epnm.pc.done()}
+quit()
+
+
+
+
