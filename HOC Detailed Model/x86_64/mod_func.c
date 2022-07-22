@@ -8,6 +8,7 @@ extern void _Ca_HVA_reg(void);
 extern void _Ca_LVAst_reg(void);
 extern void _ceil_reg(void);
 extern void _epsp_reg(void);
+extern void _floor_reg(void);
 extern void _Ih_reg(void);
 extern void _Im_reg(void);
 extern void _K_Pst_reg(void);
@@ -29,6 +30,7 @@ void modl_reg(){
     fprintf(stderr," Ca_LVAst.mod");
     fprintf(stderr," ceil.mod");
     fprintf(stderr," epsp.mod");
+    fprintf(stderr," floor.mod");
     fprintf(stderr," Ih.mod");
     fprintf(stderr," Im.mod");
     fprintf(stderr," K_Pst.mod");
@@ -47,6 +49,7 @@ void modl_reg(){
   _Ca_LVAst_reg();
   _ceil_reg();
   _epsp_reg();
+  _floor_reg();
   _Ih_reg();
   _Im_reg();
   _K_Pst_reg();

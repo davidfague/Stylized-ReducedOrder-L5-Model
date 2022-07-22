@@ -18,7 +18,7 @@ objref fileObj
 
 fileObj = new File()
 
-rdSeed = 1000                                                              // random seed
+rdSeed = 427                                                             // random seed
 Nmc = 1                                                                     // number of TTCs in the microcircuit
 condition = 0
 //  0: spontaneous
@@ -81,7 +81,7 @@ if(condition==2){
 }
 //========================================================simulation duration==========================================================
 tstart = 2000
-timearound = 500 // (ms)                                                      simulation time before and after stimulus
+timearound = 1500 // (ms)                                                      simulation time before and after stimulus
 tstop = tstart+2*timearound //                                               stop stimulation after 2*timearound
 tstim = tstart+timearound //                                                 stim halfway through simulation
 v_init = -75
@@ -581,7 +581,6 @@ objref apcvecList, apcList                                                      
 objref gNaTa_tSomaList,gNaTa_tApicalList                                                     // lists for gNaTa_t traces at Soma, Apical
 objref ica_HVAApicalList,ica_LVAstApicalList                                                 // lists for ica_HVA, ica_LVAst traces at Apical
 //objref ica_HVASomaList,ica_LVAstSomaList //necessary code not implemented yet
-objref tlist
 objref vList, inmdaList, gNaTa_tList, ica_HVAList, ica_LVAList, IhList
 //=============================================================initialize lists for each objref===================================================================
 //example: variablelocationList = new List()
@@ -604,18 +603,17 @@ ica_HVAList = new List()
 ica_LVAList = new List()
 IhList = new List()
 
+
 for(i=0;i<Ncells2save;i+=1){
 	if(epnm.gid_exists(i)){
-    nsyn = epnm.pc.gid2cell(i).synlist.count()
-    for(j=0;j<nsyn;j+=1){
-    if (j<NsynE){
+    for(j=0;j<NsynE;j+=1){
        inmdaList.append(new Vector())
        inmdaList.o[inmdaList.count()-1].record(epnm.pc.gid2cell(i).synlist.o[j],&epnm.pc.gid2cell(i).synlist.o[j].i_NMDA,dt)
-      }
      }
      print inmdaList.count() //10000
    }
  }
+
 //=============================================================initalize vector lists for variables in each cell===================================================
 //example: variableLocationList.append(new Vector())
 
@@ -760,7 +758,7 @@ for(i=0;i<Nmc;i+=1){ //for i in Nmc
     zz.compute(25)
   }
 }
-
+totalseg=0
 sectionnumber = -1
 forall {
 
@@ -787,7 +785,7 @@ forall {
         if(i==0){
             Lvec.x[i]=0
             cumLength.x[i] = Lvec.x[i]+0
-            //print "Lvec.x[i] is ", Lvec.x[i], "i is ", i
+            //print "Lvec.x[i] is ", Lvec.x[i]//, "i is ", i
             } else{
             d=((x3dvec.x[i]-x3dvec.x[i-1])^2 + (y3dvec.x[i]-y3dvec.x[i-1])^2 + (z3dvec.x[i]-z3dvec.x[i-1])^2)^0.5
             //print "Lvec.x[i] is ", d, "i is ", i
@@ -800,6 +798,7 @@ forall {
     
     //cumLength = np.cumsum(L)                                         //find alternative for np.cumsum
     N = nseg                                                 //nseg may need to be attribute of sections
+    totalseg=totalseg+N
 //print "nseg is ", N
     // Now upsample coordinates to segment locations
 
@@ -851,6 +850,7 @@ forall {
             //print "cIdxStart+1 is ",cIdxStart+1
             //print "Lvec.x[cIdxStart+1] is", Lvec.x[cIdxStart+1]
             cFraction3dLength = cDistFrom3dStart / cumLength.x[cIdxStart+1] // what's the fractional distance along this 3d segment //Lvec is not [0,cumlength] so i changed to cumLength.x[cIdxStart]
+            //print "cFraction3dLength is ", cFraction3dLength
             // compute x and y positions
             xCoord.x[n] = x3dvec.x[cIdxStart] + cFraction3dLength*(x3dvec.x[x3dvec.size()-1] - x3dvec.x[cIdxStart]) //Calculating the 3D coordinates of each segment
             yCoord.x[n] = y3dvec.x[cIdxStart] + cFraction3dLength*(y3dvec.x[y3dvec.size()-1] - y3dvec.x[cIdxStart])
@@ -868,6 +868,57 @@ forall {
   AllSegElecDist.append(Elec_distance)
   AllSegL.append(length)
 }
+//====================================================sum up NMDA currents for each segment===================================================
+objref inmda_seg
+
+print "totalseg is", totalseg
+inmda_seg = new List()  //create a list of NMDA current for each segment
+
+//
+for(i=0;i<totalseg;i+=1){
+  inmda_seg.append(new Vector((2*timearound/dt)+1,0))} //create vector for each segment with size=number of timestamps & every element initialized at 0.
+  
+apicSecInd=0 //current apic sec index
+dendSecInd=0 //current dend sec index
+prevSegInd=0 //all previous segment indices
+
+for(i=0;i<Ncells2save;i+=1){
+	if(epnm.gid_exists(i)){
+    forall { //loop through every section
+    //for(i=0;i<nseg;i+=1){
+  //inmda_seg.append(new Vector(2*timearound/dt+1,0))}
+    ifsec "apic" {
+    for(j=0;j<NsynE;j+=1) {
+    if((epnm.pc.gid2cell(i).syn_treename.x[j]==0)&&(epnm.pc.gid2cell(i).syn_SecNum.x[j]==apicSecInd)){ //0 for "apic"
+     syn_SegInd = gfloor(epnm.pc.gid2cell(i).syn_siteX.x[j]*nseg) //get seg index of section
+     iseg = syn_SegInd+prevSegInd //get seg index of entire seg list
+     if(epnm.pc.gid2cell(i).syn_siteX.x[j]==1){ //rare case when x = 1
+     iseg=iseg-1
+     }
+     inmda_seg.o[iseg].add(inmdaList.o[j].c(tstart/dt)) //add synapse inmda vector to segment inmda vector
+     }
+    }
+    apicSecInd+=1 //increase apicSecInd after accessing an apical sec
+    }
+    ifsec "dend" {
+    for(j=0;j<NsynE;j+=1) {
+    if((epnm.pc.gid2cell(i).syn_treename.x[j]==1)&&(epnm.pc.gid2cell(i).syn_SecNum.x[j]==dendSecInd)){ //1 for "dend"
+    syn_SegInd = gfloor(epnm.pc.gid2cell(i).syn_siteX.x[j]*nseg) //get seg index of section
+     iseg = syn_SegInd+prevSegInd //get seg index of entire seg list
+     if(epnm.pc.gid2cell(i).syn_siteX.x[j]==1){ //rare case when x = 1
+     iseg=iseg-1
+     }
+     inmda_seg.o[iseg].add(inmdaList.o[j].c(tstart/dt)) //add synapse inmda vector to segment inmda vector
+     }
+    }
+    dendSecInd+=1 //increase dendSecInd after accesing a dend sec
+    }
+     prevSegInd+=nseg} //move total segment index to start of next section after each section
+   }
+ }
+
+
+
 
 //============================================================================================================================================
 //================================================================ output ====================================================================
@@ -884,24 +935,25 @@ proc writefile() {
    tempvec.printf(fileObj,"%2.6e\n")
    fileObj.close()
  }
-proc writefileforallseg() {
+proc writefileforallseg() { // case where values from before t=tstart were recorded 
   sprint(fileName,"%s/%sN%d.txt",outDir,$s2,i)
   fileObj.wopen(fileName)
   for(p=0;p<$o1.count();p+=1) {
     tempvec = new Vector() 
     tempvec = $o1.o[p].c(tstart/dt)
-    tempvec.printf(fileObj,"%2.4e,",0,tempvec.size()-1)
-    //tempvec.printf(fileObj,"%2.4e",tempvec.size()-1,tempvec.size()-1)
+    tempvec.printf(fileObj,"%2.4g,",0,tempvec.size()-1)
     }
     fileObj.close()
 }
-proc writefileforallsegValues() {
+
+proc writefileforallsegValues() { //case where the values do not need to be shortened
   sprint(fileName,"%s/%sN%d.txt",outDir,$s2,i)
   fileObj.wopen(fileName)
   for(p=0;p<$o1.count();p+=1) {
     tempvec = new Vector() 
     tempvec = $o1.o[p].c
-    tempvec.printf(fileObj,"%2.4e,")
+    tempvec.printf(fileObj,"%2.4g,",0,tempvec.size()-1)
+    
     }
     fileObj.close()
 }
@@ -916,15 +968,15 @@ for(i=0;i<Ncells2save;i+=1){
     //writefile(ica_HVAApicalList,"ica_HVAMidApicTrace")
     //writefile(ica_LVAstApicalList,"ica_LVAstMidApicTrace")
     
-    
-    //print tlist.count()
-    //writefileforallseg(tlist, "tlist")
-    writefileforallseg(vList, "voltageTraceforEachSegment")
-    writefileforallseg(inmdaList, "inmdaTraceforEachSynapse")
-    writefileforallseg(gNaTa_tList, "gNaTa_tTraceforEachSegment")
-    writefileforallseg(ica_HVAList, "ica_HVATraceforEachSegment")
-    writefileforallseg(ica_LVAList, "ica_LVATraceforEachSegment")
+
+    writefileforallseg(vList, "voltageSegTraces")
+    writefileforallseg(inmdaList, "inmdaSynTraces")
+    writefileforallseg(gNaTa_tList, "gNaTa_tSegTraces")
+    writefileforallseg(ica_HVAList, "ica_HVASegTraces")
+    writefileforallseg(ica_LVAList, "ica_LVASegTraces")
     writefileforallseg(IhList, "IhTraceforEachSegment")
+    
+    writefileforallsegValues(inmda_seg, "inmdaSegTraces")
     
     writefileforallsegValues(AllSegXCoord, "AllSegXCoordValues")
     writefileforallsegValues(AllSegYCoord, "AllSegYCoordValues")
