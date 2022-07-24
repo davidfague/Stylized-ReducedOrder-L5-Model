@@ -847,7 +847,7 @@ forall {
         ifsec "soma" {segType.append(0)} //need to find correct conventions
         ifsec "apic" {segType.append(2)}
         ifsec "dend" {segType.append(1)}
-        ifsec "axon" {segType.append(4)}
+        ifsec "axon" {segType.append(3)}
 
         if(n==(N-1)){ 
             xCoord.x[n]=x3dvec.x[-1]
