@@ -81,7 +81,7 @@ if(condition==2){
 }
 //========================================================simulation duration==========================================================
 tstart = 2000
-timearound = 1500 // (ms)                                                      simulation time before and after stimulus
+timearound = 750 // (ms)                                                      simulation time before and after stimulus
 tstop = tstart+2*timearound //                                               stop stimulation after 2*timearound
 tstim = tstart+timearound //                                                 stim halfway through simulation
 v_init = -75
@@ -547,14 +547,18 @@ if(epnm.gid_exists(0)){
 	fileObj.close()
 }
 
-//simulation parameters
-if(epnm.gid_exists(0)){
-	sprint(fileName,"%s/simParam.txt",outDir)
-	fileObj.wopen(fileName)
-	fileObj.printf("tstop %d\n",tstop-tstart)
-	fileObj.printf("tstim %d\n",tstim-tstart)
-	fileObj.close()
-}
+//simulation parameters - moved later in the code to include simruntime-- delete this if it ends up working
+//if(epnm.gid_exists(0)){
+	//sprint(fileName,"%s/simParam.txt",outDir)
+	//fileObj.wopen(fileName)
+	//fileObj.printf("tstop %d\n",tstop-tstart)
+	//fileObj.printf("tstim %d\n",tstim-tstart)
+  //fileObj.printf("dt %d\n",dt)
+  //fileObj.printf("NsynE %d\n",NsynE)
+  //fileObj.printf("NsynI %d\n",NsynI)
+  //fileObj.printf("simruntimehours %d\n",simruntime)
+	//fileObj.close()
+//}
 
 
 for(i=0;i<Ncells2save;i+=1){
@@ -736,12 +740,13 @@ if (epnm.gid_exists(0)) {
 
 if (epnm.gid_exists(0)) {
 	simruntime = (startsw() - sim_tstart)/3600
-	print "Simulation took ", simruntime, " hours\n"
+	print "Simulation took ", simruntime, " hours. That's ", simruntime*60, " minutes\n"
 }
 
 //===================================================================return segment values==================================================================
-objref x3dvec, y3dvec, z3dvec, Lvec, cumLength, xCoord, yCoord, zCoord, Elec_distance, SecNum, length, zz
-objref AllSegSection, AllSegXCoord, AllSegYCoord, AllSegZCoord, AllSegElecDist, AllSegL
+objref x3dvec, y3dvec, z3dvec, Lvec, cumLength, xCoord, yCoord, zCoord, Elec_distance, SecNum, length, zz, segDistance, segType, segX
+objref AllSegSection, AllSegXCoord, AllSegYCoord, AllSegZCoord, AllSegElecDist, AllSegL, AllSegDistance, AllSegType
+objref SegSecIDList
 
 AllSegSection = new List()
 AllSegXCoord = new List()
@@ -749,6 +754,8 @@ AllSegYCoord = new List()
 AllSegZCoord = new List()
 AllSegElecDist = new List()
 AllSegL = new List()
+AllSegDistance = new List()
+AllSegType = new List()
 
 for(i=0;i<Nmc;i+=1){ //for i in Nmc
 	if (epnm.gid_exists(i)) {
@@ -760,11 +767,18 @@ for(i=0;i<Nmc;i+=1){ //for i in Nmc
 }
 totalseg=0
 sectionnumber = -1
+SegSecIDList = new Vector()
+
+
 forall {
 
     sectionnumber+=1
     //print "the section number is ", sectionnumber
 
+   for(i=0;i<nseg;i+=1){ //record the section ID of each segment
+   SegSecIDList.append(sectionnumber)
+   }
+   
     // Get section 3d coordinates and put in numpy array
     N3d = n3d() //Return the number of 3d locations stored in the currently accessed section.
     //print "n3d is ", N3d
@@ -786,7 +800,7 @@ forall {
             Lvec.x[i]=0
             cumLength.x[i] = Lvec.x[i]+0
             //print "Lvec.x[i] is ", Lvec.x[i]//, "i is ", i
-            } else{
+            } else {
             d=((x3dvec.x[i]-x3dvec.x[i-1])^2 + (y3dvec.x[i]-y3dvec.x[i-1])^2 + (z3dvec.x[i]-z3dvec.x[i-1])^2)^0.5
             //print "Lvec.x[i] is ", d, "i is ", i
             Lvec.x[i] = d
@@ -802,7 +816,6 @@ forall {
 //print "nseg is ", N
     // Now upsample coordinates to segment locations
 
-
     //Empty arrays for values   
     xCoord = new Vector(N)                                            //need alternative for np.empty() ask julius what np.empty does
     yCoord = new Vector(N)
@@ -810,49 +823,45 @@ forall {
     Elec_distance = new Vector(N)
     SecNum = new Vector(N)
     length = new Vector(N)
-
+    segType = new Vector(N)
+    segDistance = new Vector(N)
+    segX = new Vector(N)
     
-//print "L is ", L
     if(N>1){                         //Special case where the number of segments in the section is 1
-      dx = L / (N-1)
-      } else{
+      dx = L / N
+      } else {
       dx = L}
       //print "dx is ",dx
         for(n=0;n<N;n+=1){           //for(n in range(N))
         if(N3d!=0){  //n3d = 0 for axon and gives an error since no coordinates come through
         //print "N is ",N,"; n is ",n,"; cumLength.x[1] is ", cumLength.x[1],"; n*dx is ", n*dx
-        if((sectionnumber>4)&&(n==(N-1))&&(n!=0)){
-        Elec_distance.x[n] = zz.ratio(((n*dx)-.0001)/cumLength.x[1])
-        } else{
+        //if((sectionnumber>4)&&(n==(N-1))&&(n!=0)){
         Elec_distance.x[n] = zz.ratio((n*dx)/cumLength.x[1])   //Calculating Electrotonic distance
-        }
-        //print "Elec_distance is: ",Elec_distance.x[n]
         SecNum.x[n] = sectionnumber
-
+        segDistance.x[n] = distance((n*dx)/cumLength.x[1])
         length.x[n] = gceil(cumLength.x[1]/N)
+
+        ifsec "somatic" {segType.append(0)}
+        ifsec "apical" {segType.append(2)}
+        ifsec "basal" {segType.append(1)}
+        ifsec "axonal" {segType.append(4)}
 
         if(n==(N-1)){ 
             xCoord.x[n]=x3dvec.x[-1]
             yCoord.x[n]=y3dvec.x[-1]
             zCoord.x[n]=z3dvec.x[-1]
             } else{
-            //cIdxStart = np.where(n*dx >= cumLength)[0][-1] // which idx of 3d segments are we starting at             //np.where alternative
-            //cIdxStart = new Vector()
-            //cIdxStart.where(cumLength,"<=",n*dx)
             for(i=0;i<(cumLength.size()-1);i+=1){
               if(n*dx >= cumLength.x[i]){
               cIdxStart = 0
               } else{cIdxStart=-1
             }
             if(cIdxStart==0){
-            //need more information on np.where; questions: should the following procedure only occur under the if condition?
             cDistFrom3dStart = n*dx - cumLength.x[cIdxStart] // how far along that segment is this upsampled coordinate
-            //print "cIdxStart+1 is ",cIdxStart+1
-            //print "Lvec.x[cIdxStart+1] is", Lvec.x[cIdxStart+1]
             cFraction3dLength = cDistFrom3dStart / cumLength.x[cIdxStart+1] // what's the fractional distance along this 3d segment //Lvec is not [0,cumlength] so i changed to cumLength.x[cIdxStart]
             //print "cFraction3dLength is ", cFraction3dLength
             // compute x and y positions
-            xCoord.x[n] = x3dvec.x[cIdxStart] + cFraction3dLength*(x3dvec.x[x3dvec.size()-1] - x3dvec.x[cIdxStart]) //Calculating the 3D coordinates of each segment
+            xCoord.x[n] = x3dvec.x[cIdxStart] + cFraction3dLength*(x3dvec.x[x3dvec.size()-1] - x3dvec.x[cIdxStart]) //Calculating the interpolated 3D coordinates of each segment
             yCoord.x[n] = y3dvec.x[cIdxStart] + cFraction3dLength*(y3dvec.x[y3dvec.size()-1] - y3dvec.x[cIdxStart])
             zCoord.x[n] = z3dvec.x[cIdxStart] + cFraction3dLength*(z3dvec.x[z3dvec.size()-1] - z3dvec.x[cIdxStart])
             }
@@ -867,52 +876,81 @@ forall {
   AllSegZCoord.append(zCoord)
   AllSegElecDist.append(Elec_distance)
   AllSegL.append(length)
+  AllSegDistance.append(segDistance)
+  AllSegType.append(segType)
 }
 //====================================================sum up NMDA currents for each segment===================================================
-objref inmda_seg
+objref inmda_seg, isegList, SynSecIDList, SynDistance, SynType, SynSecType
 
-print "totalseg is", totalseg
+isegList= new Vector()
+SynSecIDList = new Vector()
+SynDistance = new Vector()
+SynType = new Vector()
+SynSecType = new Vector()
 inmda_seg = new List()  //create a list of NMDA current for each segment
 
-//
-for(i=0;i<totalseg;i+=1){
-  inmda_seg.append(new Vector((2*timearound/dt)+1,0))} //create vector for each segment with size=number of timestamps & every element initialized at 0.
+print "total number of segments is ", totalseg
+
+print inmdaList.o[j].c(tstart/dt).size()
+
+for(i=0;i<totalseg;i+=1){ //create list of vectors for each segment with size=number of timestamps & every element initialized at 0.
+  inmda_seg.append(new Vector(inmdaList.o[1].c(tstart/dt).size(),0))}
   
 apicSecInd=0 //current apic sec index
 dendSecInd=0 //current dend sec index
 prevSegInd=0 //all previous segment indices
+isec=0 //section indices
 
 for(i=0;i<Ncells2save;i+=1){
 	if(epnm.gid_exists(i)){
     forall { //loop through every section
-    //for(i=0;i<nseg;i+=1){
-  //inmda_seg.append(new Vector(2*timearound/dt+1,0))}
     ifsec "apic" {
-    for(j=0;j<NsynE;j+=1) {
+    for(j=0;j<(NsynE+NsynI);j+=1) {
     if((epnm.pc.gid2cell(i).syn_treename.x[j]==0)&&(epnm.pc.gid2cell(i).syn_SecNum.x[j]==apicSecInd)){ //0 for "apic"
-     syn_SegInd = gfloor(epnm.pc.gid2cell(i).syn_siteX.x[j]*nseg) //get seg index of section
+     syn_SegInd = gfloor(epnm.pc.gid2cell(i).syn_siteX.x[j]*nseg) //get seg index of section starts at 0
      iseg = syn_SegInd+prevSegInd //get seg index of entire seg list
      if(epnm.pc.gid2cell(i).syn_siteX.x[j]==1){ //rare case when x = 1
      iseg=iseg-1
      }
+     if(j<NsynE){
      inmda_seg.o[iseg].add(inmdaList.o[j].c(tstart/dt)) //add synapse inmda vector to segment inmda vector
      }
+     isegList.append(iseg)
+     SynSecIDList.append(isec)
+     SynDistance.append(distance(epnm.pc.gid2cell(i).syn_siteX.x[j]))
+          if(j<NsynE){
+       SynType.append(1) //1 for exc
+      } else{
+        SynType.append(0)
+     }
     }
+ }
     apicSecInd+=1 //increase apicSecInd after accessing an apical sec
     }
     ifsec "dend" {
-    for(j=0;j<NsynE;j+=1) {
+    for(j=0;j<(NsynE+NsynI);j+=1){
     if((epnm.pc.gid2cell(i).syn_treename.x[j]==1)&&(epnm.pc.gid2cell(i).syn_SecNum.x[j]==dendSecInd)){ //1 for "dend"
     syn_SegInd = gfloor(epnm.pc.gid2cell(i).syn_siteX.x[j]*nseg) //get seg index of section
      iseg = syn_SegInd+prevSegInd //get seg index of entire seg list
      if(epnm.pc.gid2cell(i).syn_siteX.x[j]==1){ //rare case when x = 1
      iseg=iseg-1
      }
+     if(j<NsynE){
      inmda_seg.o[iseg].add(inmdaList.o[j].c(tstart/dt)) //add synapse inmda vector to segment inmda vector
      }
+     isegList.append(iseg)
+     SynSecIDList.append(isec)
+     SynDistance.append(distance(epnm.pc.gid2cell(i).syn_siteX.x[j]))
+     if(j<NsynE){
+       SynType.append(1) //1 for exc
+      } else{
+        SynType.append(0)
+     }
     }
+ }
     dendSecInd+=1 //increase dendSecInd after accesing a dend sec
     }
+     isec+=1 //increase section indice
      prevSegInd+=nseg} //move total segment index to start of next section after each section
    }
  }
@@ -925,6 +963,7 @@ for(i=0;i<Ncells2save;i+=1){
 // write output files for recorded variable
 
 i2=0
+print "dt is ", dt
 
 proc writefile() {
    tempvec = new Vector()
@@ -953,9 +992,30 @@ proc writefileforallsegValues() { //case where the values do not need to be shor
     tempvec = new Vector() 
     tempvec = $o1.o[p].c
     tempvec.printf(fileObj,"%2.4g,",0,tempvec.size()-1)
-    
     }
     fileObj.close()
+}
+
+proc writefileforVector() { //case where the values do not need to be shortened
+  sprint(fileName,"%s/%sN%d.txt",outDir,$s2,i)
+  fileObj.wopen(fileName)
+    tempvec = new Vector() 
+    tempvec = $o1
+    tempvec.printf(fileObj,"%2.4g,",0,tempvec.size()-1)
+    fileObj.close()
+}
+
+//simulation parameters
+if(epnm.gid_exists(0)){
+	sprint(fileName,"%s/simParam.txt",outDir)
+	fileObj.wopen(fileName)
+	fileObj.printf("tstop %d\n",tstop-tstart)
+	fileObj.printf("tstim %d\n",tstim-tstart)
+  fileObj.printf("dt %d\n",dt)
+  fileObj.printf("NsynE %d\n",NsynE)
+  fileObj.printf("NsynI %d\n",NsynI)
+  fileObj.printf("simruntimehours %d\n",simruntime)
+	fileObj.close()
 }
 
 for(i=0;i<Ncells2save;i+=1){
@@ -970,13 +1030,22 @@ for(i=0;i<Ncells2save;i+=1){
     
 
     writefileforallseg(vList, "voltageSegTraces")
-    writefileforallseg(inmdaList, "inmdaSynTraces")
+    //writefileforallseg(inmdaList, "inmdaSynTraces")
     writefileforallseg(gNaTa_tList, "gNaTa_tSegTraces")
     writefileforallseg(ica_HVAList, "ica_HVASegTraces")
     writefileforallseg(ica_LVAList, "ica_LVASegTraces")
     writefileforallseg(IhList, "IhTraceforEachSegment")
     
     writefileforallsegValues(inmda_seg, "inmdaSegTraces")
+    writefileforVector(epnm.pc.gid2cell(i).syn_treename, "SynSecType")
+    writefileforVector(epnm.pc.gid2cell(i).syn_siteX, "SynX")
+    writefileforVector(isegList, "SynSegID")
+    writefileforVector(SynDistance, "SynDistance")
+    
+    writefileforallsegValues(AllSegDistance, "SegDistance")
+    writefileforallsegValues(AllSegType, "AllSegType")
+    writefileforVector(SegSecIDList, "SegSecID")
+    writefileforVector(SynType, "SynType")
     
     writefileforallsegValues(AllSegXCoord, "AllSegXCoordValues")
     writefileforallsegValues(AllSegYCoord, "AllSegYCoordValues")
