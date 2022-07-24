@@ -842,9 +842,11 @@ forall {
         segX.x[n] = ((n*dx)/cumLength.x[1])
         length.x[n] = gceil(cumLength.x[1]/N)
 
+
+        //get segment types
         ifsec "soma" {segType.append(0)} //need to find correct conventions
         ifsec "apic" {segType.append(2)}
-        ifsec "basal" {segType.append(1)}
+        ifsec "dend" {segType.append(1)}
         ifsec "axon" {segType.append(4)}
 
         if(n==(N-1)){ 
@@ -958,7 +960,7 @@ for(i=0;i<Ncells2save;i+=1){
  }
 
 
-
+print "segType size is: ",segType.size()
 
 //============================================================================================================================================
 //================================================================ output ====================================================================
