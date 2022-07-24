@@ -745,9 +745,8 @@ if (epnm.gid_exists(0)) {
 
 //===================================================================return segment values==================================================================
 objref x3dvec, y3dvec, z3dvec, Lvec, cumLength, xCoord, yCoord, zCoord, Elec_distance, SecNum, length, zz, segDistance, segType, segX
-objref AllSegSection, AllSegXCoord, AllSegYCoord, AllSegZCoord, AllSegElecDist, AllSegL, AllSegDistance, AllSegType
+objref AllSegSection, AllSegXCoord, AllSegYCoord, AllSegZCoord, AllSegElecDist, AllSegL, AllSegDistance, AllSegType, AllSegX
 objref SegSecIDList
-
 AllSegSection = new List()
 AllSegXCoord = new List()
 AllSegYCoord = new List()
@@ -756,6 +755,7 @@ AllSegElecDist = new List()
 AllSegL = new List()
 AllSegDistance = new List()
 AllSegType = new List()
+AllSegX = new List()
 
 for(i=0;i<Nmc;i+=1){ //for i in Nmc
 	if (epnm.gid_exists(i)) {
@@ -839,12 +839,13 @@ forall {
         Elec_distance.x[n] = zz.ratio((n*dx)/cumLength.x[1])   //Calculating Electrotonic distance
         SecNum.x[n] = sectionnumber
         segDistance.x[n] = distance((n*dx)/cumLength.x[1])
+        segX.x[n] = ((n*dx)/cumLength.x[1])
         length.x[n] = gceil(cumLength.x[1]/N)
 
-        ifsec "somatic" {segType.append(0)}
-        ifsec "apical" {segType.append(2)}
+        ifsec "soma" {segType.append(0)} //need to find correct conventions
+        ifsec "apic" {segType.append(2)}
         ifsec "basal" {segType.append(1)}
-        ifsec "axonal" {segType.append(4)}
+        ifsec "axon" {segType.append(4)}
 
         if(n==(N-1)){ 
             xCoord.x[n]=x3dvec.x[-1]
@@ -878,6 +879,7 @@ forall {
   AllSegL.append(length)
   AllSegDistance.append(segDistance)
   AllSegType.append(segType)
+  AllSegX.append(segX)
 }
 //====================================================sum up NMDA currents for each segment===================================================
 objref inmda_seg, isegList, SynSecIDList, SynDistance, SynType, SynSecType
@@ -1046,8 +1048,10 @@ for(i=0;i<Ncells2save;i+=1){
     writefileforallsegValues(AllSegType, "AllSegType")
     writefileforVector(SegSecIDList, "SegSecID")
     writefileforVector(SynType, "SynType")
+    writefileforVector(SynSecIDList, "SynSecID")
     
     writefileforallsegValues(AllSegXCoord, "AllSegXCoordValues")
+    writefileforallsegValues(AllSegX, "AllSegX")
     writefileforallsegValues(AllSegYCoord, "AllSegYCoordValues")
     writefileforallsegValues(AllSegZCoord, "AllSegZCoordValues")
     writefileforallsegValues(AllSegSection, "AllSegSectionValues")
