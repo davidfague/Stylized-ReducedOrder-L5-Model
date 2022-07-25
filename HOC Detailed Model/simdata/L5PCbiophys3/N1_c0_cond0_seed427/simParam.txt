@@ -1,2 +1,0 @@
-tstop 3000
-tstim 1500
