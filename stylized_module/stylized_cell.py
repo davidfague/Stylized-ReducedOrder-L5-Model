@@ -25,6 +25,9 @@ class Stylized_Cell(object):
         self._nsec = 0
         self._nseg = 0
         self.all = []  # list of all sections
+        self.apical = [] # list of apical sections
+        self.basal = [] # list of basal sections
+        self.axonal = [] # list of axonal sections
         self.segments = []  # list of all segments
         self.sec_id_lookup = {} # dictionary from section type id to section index
         self.sec_id_in_seg = []
@@ -96,6 +99,12 @@ class Stylized_Cell(object):
         sec = h.Section(name=name)
         sec.diam = diam
         self.all.append(sec)
+        if sec['type']=='apic':
+            self.apical.append(sec)
+        elif sec['type']=='dend':
+            self.basal.append(sec)
+        elif sec['type']=='axon':
+            self.axonal.append(sec)
         self._nsec += 1
         return sec
 
