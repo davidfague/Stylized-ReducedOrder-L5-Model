@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Optional, Sequence, Dict, Union, TypeVar
 
-from stylized_module.current_injection import Current_injections
+from stylized_module.current_injection import Current_injection
 
 h.load_file('stdrun.hoc')
 
