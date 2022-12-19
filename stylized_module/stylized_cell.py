@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Optional, Sequence, Dict, Union, TypeVar
 
-from stylized_module.current_injection import Current_injection
+from stylized_module.current_injection import Current_injections
 
 h.load_file('stdrun.hoc')
 
@@ -99,11 +99,11 @@ class Stylized_Cell(object):
         sec = h.Section(name=name)
         sec.diam = diam
         self.all.append(sec)
-        if sec['type']==4:
+        if sectype==4:
             self.apical.append(sec)
-        elif sec['type']==3:
+        elif sectype==3:
             self.basal.append(sec)
-        elif sec['type']==2:
+        elif sectype==2:
             self.axonal.append(sec)
         self._nsec += 1
         return sec
