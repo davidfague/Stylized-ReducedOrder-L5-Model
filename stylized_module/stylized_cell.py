@@ -88,22 +88,22 @@ class Stylized_Cell(object):
                     pt1[1] = pt0[1] + y
                     pt1[0] = pt0[0] + x * math.cos(i * rot)
                     pt1[2] = pt0[2] + x * math.sin(i * rot)
-                    section = self.__create_section(name=sec['name'], diam=2 * radius)
+                    section = self.__create_section(name=sec['name'], diam=2 * radius,sectype=sec['type'])
                     section.connect(psec(1), 0)
                     self.__set_location(section, pt0, pt1, nseg)
             self.sec_id_lookup[sec_id] = list(range(start_idx, self._nsec))
         self.__set_location(self.soma, [0., -r0, 0.], [0., r0, 0.], 1)
         self.__store_segments()
 
-    def __create_section(self,name='null_sec',diam=500.0):
+    def __create_section(self,name='null_sec',diam=500.0,sectype=int):
         sec = h.Section(name=name)
         sec.diam = diam
         self.all.append(sec)
-        if sec['type']=='apic':
+        if sec['type']==4:
             self.apical.append(sec)
-        elif sec['type']=='dend':
+        elif sec['type']==3:
             self.basal.append(sec)
-        elif sec['type']=='axon':
+        elif sec['type']==2:
             self.axonal.append(sec)
         self._nsec += 1
         return sec
