@@ -6,6 +6,7 @@ import scipy.stats as st
 import os, sys
 from typing import Optional, List, Tuple, Union
 import math
+import random
 
 #import stylized cell
 from stylized_module.stylized_cell import Stylized_Cell
