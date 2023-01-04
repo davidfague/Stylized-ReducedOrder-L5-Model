@@ -51,7 +51,7 @@ def shift_exc_noise(ts, nid, milliseconds, time_shift=4):
     fr_prof = normalize(fr_prof)+0.5
     return fr_prof
   
- class SonataWriter:
+class SonataWriter:
     """Class used to dynamically writing spike rasters to an h5 file.
     Attributes
     ----------
