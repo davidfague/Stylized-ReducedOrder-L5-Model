@@ -14,7 +14,8 @@ from stylized_module.point_current import Point_current
 
 #import sonatawriter
 from SROL5.utils import SonataWriter, normalize, make_noise, shift_exc_noise
-
+sectionexcspikes=[]
+sectioninhspikes=[]
 class Cell(Stylized_Cell):
     """Define single cell model using parent class Stylized_Cell"""
     def __init__(self,geometry=None,biophys=None,dL=5,vrest=-72.0): #-90? # dL=30 originally
@@ -243,8 +244,6 @@ class Synapse(Point_current):
         self.P_0 = P_0
         self.syntype=SynType
         self.setup(record,loc,P_0,gmax,SynType,stim)
-
-        
 
     def setup(self,record,loc,P_0,gmax,SynType,stim):
         self.setup_synapse(loc,P_0,gmax,SynType,stim)
