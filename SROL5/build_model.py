@@ -24,8 +24,6 @@ tstop = 1000  # ms simulation duration
 dt = 0.1  # ms. does not allow change
 
 h.load_file('stdrun.hoc')
-#h.nrn_load_dll(os.path.join(mechanisms_path,'nrnmech.dll'))  # running this line more than once might crash the kernel
-h.nrn_load_dll(os.path.join(mechanisms_path,'x86_64/.libs/libnrnmech.so'))  # use this line instead in Linux
 geo_standard = pd.read_csv(geometry_file,index_col='id')
 h.tstop = tstop
 h.dt = dt
