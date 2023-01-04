@@ -5,7 +5,6 @@ import scipy.signal as ss
 import scipy.stats as st
 import os, sys
 from typing import Optional, List, Tuple, Union
-import h5py
 
 #import stylized cell
 from stylized_module.stylized_cell import Stylized_Cell
