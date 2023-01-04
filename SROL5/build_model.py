@@ -21,7 +21,7 @@ h.steps_per_ms = 1/h.dt
 import random
 random.seed(427)
 
- class Cell(Stylized_Cell):
+class Cell(Stylized_Cell):
     """Define single cell model using parent class Stylized_Cell"""
     def __init__(self,geometry=None,biophys=None,dL=5,vrest=-72.0): #-90? # dL=30 originally
         """
