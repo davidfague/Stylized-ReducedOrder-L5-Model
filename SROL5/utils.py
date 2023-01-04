@@ -1,3 +1,5 @@
+import h5py
+
 #Additional functions
 def normalize(x):
     """normalizes the given array"""
