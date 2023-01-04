@@ -12,23 +12,6 @@ from stylized_module.ecp import EcpMod, newposition
 from stylized_module.recorder import Recorder
 from stylized_module.point_current import Point_current
 
-mechanisms_path = 'mechanisms'  # need to compile the folder first
-geometry_file = 'geom_parameters.csv'
-tstop = 1000  # ms simulation duration
-dt = 0.1  # ms. does not allow change
-
-h.load_file('stdrun.hoc')
-#h.nrn_load_dll(os.path.join(mechanisms_path,'nrnmech.dll'))  # running this line more than once might crash the kernel
-h.nrn_load_dll(os.path.join(mechanisms_path,'x86_64/.libs/libnrnmech.so'))  # use this line instead in Linux
-geo_standard = pd.read_csv(geometry_file,index_col='id')
-h.tstop = tstop
-h.dt = dt
-h.steps_per_ms = 1/h.dt
-
-#pick a random seed to initalize random values
-import random
-random.seed(427)
-
 class Cell(Stylized_Cell):
     """Define single cell model using parent class Stylized_Cell"""
     def __init__(self,geometry=None,biophys=None,dL=5,vrest=-72.0): #-90? # dL=30 originally
