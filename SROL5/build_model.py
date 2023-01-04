@@ -18,6 +18,19 @@ from stylized_module.point_current import Point_current
 #import sonatawriter
 from SROL5.utils import SonataWriter, normalize, make_noise, shift_exc_noise
 
+mechanisms_path = 'mechanisms'  # need to compile the folder first
+geometry_file = 'geom_parameters.csv'
+tstop = 1000  # ms simulation duration
+dt = 0.1  # ms. does not allow change
+
+h.load_file('stdrun.hoc')
+#h.nrn_load_dll(os.path.join(mechanisms_path,'nrnmech.dll'))  # running this line more than once might crash the kernel
+h.nrn_load_dll(os.path.join(mechanisms_path,'x86_64/.libs/libnrnmech.so'))  # use this line instead in Linux
+geo_standard = pd.read_csv(geometry_file,index_col='id')
+h.tstop = tstop
+h.dt = dt
+h.steps_per_ms = 1/h.dt
+
 #get underlying normal distribution parameters from lognormal distribution parameters
 m=.2
 s=0.345
