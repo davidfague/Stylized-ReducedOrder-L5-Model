@@ -16,6 +16,13 @@ from stylized_module.point_current import Point_current
 
 #import sonatawriter
 from SROL5.utils import SonataWriter, normalize, make_noise, shift_exc_noise
+
+#get underlying normal distribution parameters from lognormal distribution parameters
+m=.2
+s=0.345
+mean = np.log(m) - 0.5 * np.log((s/m)**2+1)
+std = np.sqrt(np.log((s/m)**2 + 1))
+
 sectionexcspikes=[]
 sectioninhspikes=[]
 class Cell(Stylized_Cell):
