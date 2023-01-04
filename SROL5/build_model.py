@@ -7,6 +7,7 @@ import os, sys
 from typing import Optional, List, Tuple, Union
 import math
 import random
+from functools import partial
 
 #import stylized cell
 from stylized_module.stylized_cell import Stylized_Cell
