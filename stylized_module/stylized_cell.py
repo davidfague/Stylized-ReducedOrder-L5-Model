@@ -64,7 +64,7 @@ class Stylized_Cell(object):
                 r0 = sec['R']
                 pt0 = [0., -2 * r0, 0.]
                 pt1 = [0., 0., 0.]
-                self.soma = self.__create_section(name=sec['name'], diam=2 * r0)
+                self.soma = self.__create_section(name=sec['name'], diam=2 * r0,sectype=sec['type'])
                 self.__set_location(self.soma, pt0, pt1, 1)
             else:
                 length = sec['L']
@@ -112,6 +112,7 @@ class Stylized_Cell(object):
             sec.diam = diam
             self.axonal.append(sec)
         elif sectype==1:
+            name=name+'['+str(len(self.soma))+']'
             sec=h.Section(name=name)
             sec.diam=diam
         self.all.append(sec)
