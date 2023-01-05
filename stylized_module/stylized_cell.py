@@ -68,6 +68,7 @@ class Stylized_Cell(object):
                 self.soma = self.__create_section(name=sec['name'], diam=2 * r0,sectype=sec['type'])
                 self.__set_location(self.soma, pt0, pt1, 1)
             else:
+                print(sec_id)
                 length = sec['L']
                 radius = sec['R']
                 ang = sec['ang']
