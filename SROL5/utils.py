@@ -1,4 +1,5 @@
 import h5py
+import numpy as np
 
 #Additional functions
 def normalize(x):
