@@ -95,7 +95,7 @@ class Stylized_Cell(object):
         self.__set_location(self.soma, [0., -r0, 0.], [0., r0, 0.], 1)
         self.__store_segments()
 
-    def __create_section(self,name='null_sec',diam=500.0,sectype=int,nbranch_index):
+    def __create_section(self,name='null_sec',diam=500.0,sectype=int,nbranch_index=int):
         if sectype==4:
             name=name+'['+str(nbranch_index)+']'+'apic['+str(len(apic))+']'
             sec = h.Section(name=name)
