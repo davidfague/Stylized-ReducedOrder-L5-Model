@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import scipy.signal as ss
 
 #Additional functions
 def normalize(x):
