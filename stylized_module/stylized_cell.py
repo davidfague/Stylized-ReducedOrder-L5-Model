@@ -24,11 +24,11 @@ class Stylized_Cell(object):
         self._nbranch = max(nbranch,2)
         self._nsec = 0
         self._nseg = 0
-        self.all = []  # list of all sections
-        self.apical = [] # list of apical sections
-        self.basal = [] # list of basal sections
-        self.axonal = [] # list of axonal sections
-        self.somal = [] #list of soma sections
+        self.all = h.SectionList()
+        self.somatic = h.SectionList()
+        self.apical = h.SectionList()
+        self.basal = h.SectionList()
+        self.axonal = h.SectionList() # list of axonal sections
         self.segments = []  # list of all segments
         self.sec_id_lookup = {} # dictionary from section type id to section index
         self.sec_id_in_seg = []
