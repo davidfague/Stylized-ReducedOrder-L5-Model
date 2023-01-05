@@ -28,6 +28,7 @@ class Stylized_Cell(object):
         self.apical = [] # list of apical sections
         self.basal = [] # list of basal sections
         self.axonal = [] # list of axonal sections
+        self.somal = [] #list of soma sections
         self.segments = []  # list of all segments
         self.sec_id_lookup = {} # dictionary from section type id to section index
         self.sec_id_in_seg = []
@@ -112,7 +113,7 @@ class Stylized_Cell(object):
             sec.diam = diam
             self.axonal.append(sec)
         elif sectype==1:
-            name=name+'['+str(len(self.soma))+']'
+            name=name+'['+str(len(self.somal))+']'
             sec=h.Section(name=name)
             sec.diam=diam
         self.all.append(sec)
