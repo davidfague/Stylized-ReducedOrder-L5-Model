@@ -97,21 +97,21 @@ class Stylized_Cell(object):
 
     def __create_section(self,name='null_sec',diam=500.0,sectype=int,nbranch_index=int):
         if sectype==4:
-            name=name+'['+str(nbranch_index)+']'+'apic['+str(len(self.apical))+']'
+            name=name+'['+str(nbranch_index)+'].'+'apic['+str(len(self.apical))+']'
             sec = h.Section(name=name)
             sec.diam = diam
             self.apical.append(sec)
         elif sectype==3:
-            name=name+'['+str(nbranch_index)+']'+'dend['+str(len(self.basal))+']'
+            name=name+'['+str(nbranch_index)+'].'+'dend['+str(len(self.basal))+']'
             sec = h.Section(name=name)
             sec.diam = diam
             self.basal.append(sec)
         elif sectype==2:
-            name=name+'['+str(nbranch_index)+']'+'axon['+str(len(self.axonal))+']'
+            name=name+'['+str(nbranch_index)+'].'+'axon['+str(len(self.axonal))+']'
             sec = h.Section(name=name)
             sec.diam = diam
             self.axonal.append(sec)
-        else:
+        elif sectype==1:
             sec=h.Section(name=name)
             sec.diam=diam
         self.all.append(sec)
