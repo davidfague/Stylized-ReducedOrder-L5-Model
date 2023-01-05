@@ -113,10 +113,10 @@ class Stylized_Cell(object):
             sec.diam = diam
             self.axonal.append(sec)
         elif sectype==1:
-            name=name+'['+str(len(self.somal))+']'
+            name=name+'['+str(len(self.somatic))+']'
             sec=h.Section(name=name)
             sec.diam=diam
-            self.somal.append(sec)
+            self.somatic.append(sec)
         self.all.append(sec)
         self._nsec += 1
         return sec
