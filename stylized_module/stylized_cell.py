@@ -88,23 +88,30 @@ class Stylized_Cell(object):
                     pt1[1] = pt0[1] + y
                     pt1[0] = pt0[0] + x * math.cos(i * rot)
                     pt1[2] = pt0[2] + x * math.sin(i * rot)
-                    section = self.__create_section(name=sec['name'], diam=2 * radius,sectype=sec['type'])
+                    section = self.__create_section(name=sec['name'], diam=2 * radius,sectype=sec['type'],nbranch_index=i)
                     section.connect(psec(1), 0)
                     self.__set_location(section, pt0, pt1, nseg)
             self.sec_id_lookup[sec_id] = list(range(start_idx, self._nsec))
         self.__set_location(self.soma, [0., -r0, 0.], [0., r0, 0.], 1)
         self.__store_segments()
 
-    def __create_section(self,name='null_sec',diam=500.0,sectype=int):
-        sec = h.Section(name=name)
-        sec.diam = diam
-        self.all.append(sec)
+    def __create_section(self,name='null_sec',diam=500.0,sectype=int,nbranch_index):
         if sectype==4:
+            name=name+'['+str(nbranch_index)+']'+'apic['+str(len(apic))+']'
+            sec = h.Section(name=name)
+            sec.diam = diam
             self.apical.append(sec)
         elif sectype==3:
+            name=name+'['+str(nbranch_index)+']'+'dend['+str(len(basal))+']'
+            sec = h.Section(name=name)
+            sec.diam = diam
             self.basal.append(sec)
         elif sectype==2:
+            name=name+'['+str(nbranch_index)+']'+'axon['+str(len(axonal))+']'
+            sec = h.Section(name=name)
+            sec.diam = diam
             self.axonal.append(sec)
+        self.all.append(sec)
         self._nsec += 1
         return sec
 
