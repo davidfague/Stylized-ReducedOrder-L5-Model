@@ -84,7 +84,7 @@ class Stylized_Cell(object):
                     if len(pid) == 1:
                         pid = pid*nbranch
                 for i in range(nbranch):
-                    psec = self.all[pid[i]]
+                    psec = list(self.all)[pid[i]]
                     pt0 = [psec.x3d(1), psec.y3d(1), psec.z3d(1)]
                     pt1[1] = pt0[1] + y
                     pt1[0] = pt0[0] + x * math.cos(i * rot)
@@ -174,9 +174,9 @@ class Stylized_Cell(object):
     def get_sec_by_id(self,index=None):
         """Get section(s) objects by index(indices) in the section list"""
         if not hasattr(index,'__len__'):
-            sec = self.all[index]
+            sec = list(self.all)[index]
         else:
-            sec = [self.all[i] for i in index]
+            sec = [list(self.all)[i] for i in index]
         return sec
 
     def get_seg_by_id(self,index=None):
