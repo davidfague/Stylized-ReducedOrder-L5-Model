@@ -85,7 +85,7 @@ class Stylized_Cell(object):
                     if len(pid) == 1:
                         pid = pid*nbranch
                 for i in range(nbranch):
-                    print('all is:',list(self.all)
+                    print('all is:',list(self.all))
                     print('indexing all at:',pid[i])
                     print('parent section:',list(self.all)[pid[i]])
                     psec = list(self.all)[pid[i]]
