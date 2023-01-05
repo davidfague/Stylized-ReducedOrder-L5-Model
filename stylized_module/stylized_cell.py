@@ -68,7 +68,7 @@ class Stylized_Cell(object):
                 self.soma = self.__create_section(name=sec['name'], diam=2 * r0,sectype=sec['type'])
                 self.__set_location(self.soma, pt0, pt1, 1)
             else:
-                print('now attempting:',sec_id)
+                print('now attempting sec_id:',sec_id)
                 length = sec['L']
                 radius = sec['R']
                 ang = sec['ang']
@@ -85,7 +85,7 @@ class Stylized_Cell(object):
                     if len(pid) == 1:
                         pid = pid*nbranch
                 for i in range(nbranch):
-                    print('all:',list(self.all),'|pid[i]:',pid[i],'|psec:',list(self.all)[pid[i]])
+                    print('all:',list(self.all),'| pid[i]:',pid[i],'| psec:',list(self.all)[pid[i]])
                     psec = list(self.all)[pid[i]]
                     pt0 = [psec.x3d(1), psec.y3d(1), psec.z3d(1)]
                     pt1[1] = pt0[1] + y
@@ -146,7 +146,7 @@ class Stylized_Cell(object):
         p1 = np.empty((self._nseg,3))
         p05 = np.empty((self._nseg,3))
         r = np.empty(self._nseg)
-        for isec,sec in enumerate(self.all):
+        for isec,sec in enumerate(list(self.all)):
             iseg = self.sec_id_in_seg[isec]
             nseg = sec.nseg
             pt0 = np.array([sec.x3d(0),sec.y3d(0),sec.z3d(0)])
