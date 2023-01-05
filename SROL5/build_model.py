@@ -9,6 +9,7 @@ import math
 import random
 from functools import partial
 import numpy as np
+import h5py
 
 #import stylized cell
 from stylized_module.stylized_cell import Stylized_Cell
