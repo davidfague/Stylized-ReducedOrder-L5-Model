@@ -24,7 +24,7 @@ class Point_current(object):
         self.rec_vec = h.Vector(*size).record(self.pp_obj._ref_i)
     
     def get_section(self):
-        return self.cell.all[self.sec_index]
+        return self.cell.allsections[self.sec_index]
     
     def get_segment(self):
         return self.pp_obj.get_segment()
