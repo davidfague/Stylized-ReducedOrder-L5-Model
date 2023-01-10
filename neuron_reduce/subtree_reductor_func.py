@@ -235,7 +235,9 @@ def create_segments_to_mech_vals(sections_to_delete,
 
                 if not n.endswith('_' + mech_name) and not mech_name.endswith('_ion'):
                     n += '_' + mech_name
-
+                if n == 'i_membrane_extracellular'
+                    n = 'extracellular'
+                  
                 segment_to_mech_vals[seg][mech_name][n] = getattr(seg, n)
                 mech_names.add(mech_name)
 
