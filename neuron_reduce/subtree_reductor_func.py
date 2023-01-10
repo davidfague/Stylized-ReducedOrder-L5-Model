@@ -782,7 +782,7 @@ def subtree_reductor(original_cell,
     model_obj_name = load_model(model_filename)
 
     # finds soma properties
-    try: soma = original_cell.soma
+    soma = original_cell.soma
 
     soma_cable = CableParams(length=soma.L, diam=soma.diam, space_const=None,
                              cm=soma.cm, rm=1.0 / soma.g_pas, ra=soma.Ra, e_pas=soma.e_pas,
