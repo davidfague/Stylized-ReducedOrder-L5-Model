@@ -24,7 +24,8 @@ class Stylized_Cell(object):
         self._nbranch = max(nbranch,2)
         self._nsec = 0
         self._nseg = 0
-        self.all = h.SectionList()
+        self.allsections = [] # list of sections
+        self.all = h.SectionList() # SectionList hoc object
         self.somatic = h.SectionList()
         self.apical = h.SectionList()
         self.basal = h.SectionList()
@@ -119,6 +120,7 @@ class Stylized_Cell(object):
             sec=h.Section(name=name)
             sec.diam=diam
             self.somatic.append(sec)
+        self.allsections.append(sec)
         self.all.append(sec)
         self._nsec += 1
         return sec
@@ -133,7 +135,7 @@ class Stylized_Cell(object):
         self.segments = []
         self.sec_id_in_seg = []
         nseg = 0
-        for sec in self.all:
+        for sec in self.allsections:
             self.sec_id_in_seg.append(nseg)
             nseg += sec.nseg
             for seg in sec:
@@ -146,7 +148,7 @@ class Stylized_Cell(object):
         p1 = np.empty((self._nseg,3))
         p05 = np.empty((self._nseg,3))
         r = np.empty(self._nseg)
-        for isec,sec in enumerate(list(self.all)):
+        for isec,sec in enumerate(self.allsections):
             iseg = self.sec_id_in_seg[isec]
             nseg = sec.nseg
             pt0 = np.array([sec.x3d(0),sec.y3d(0),sec.z3d(0)])
@@ -176,9 +178,9 @@ class Stylized_Cell(object):
     def get_sec_by_id(self,index=None):
         """Get section(s) objects by index(indices) in the section list"""
         if not hasattr(index,'__len__'):
-            sec = list(self.all)[index]
+            sec = self.allsections[index]
         else:
-            sec = [list(self.all)[i] for i in index]
+            sec = [self.allsections[i] for i in index]
         return sec
 
     def get_seg_by_id(self,index=None):
@@ -195,7 +197,7 @@ class Stylized_Cell(object):
 
     def set_all_passive(self,gl=0.0003):
         """A use case of 'set_channels', set all sections passive membrane"""
-        for sec in self.all:
+        for sec in self.allsections:
             sec.cm = 1.0
             sec.insert('pas')
             sec.g_pas = gl
