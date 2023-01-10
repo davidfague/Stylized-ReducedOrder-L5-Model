@@ -573,7 +573,7 @@ def create_reduced_cell(soma_cable,
     create_sections_in_hoc("soma", 1, "reduced_cell")
 
     try: soma = original_cell.soma[0] if original_cell.soma.hname()[-1] == ']' else original_cell.soma
-     except: soma = original_cell.soma
+    except: soma = original_cell.soma
     append_to_section_lists("soma[0]", "somatic", "reduced_cell")
 
     if has_apical:  # creates reduced apical cable if apical subtree existed
@@ -783,7 +783,7 @@ def subtree_reductor(original_cell,
 
     # finds soma properties
     try: soma = original_cell.soma[0] if original_cell.soma.hname()[-1] == ']' else original_cell.soma
-     except: soma = original_cell.soma
+    except: soma = original_cell.soma
 
     soma_cable = CableParams(length=soma.L, diam=soma.diam, space_const=None,
                              cm=soma.cm, rm=1.0 / soma.g_pas, ra=soma.Ra, e_pas=soma.e_pas,
