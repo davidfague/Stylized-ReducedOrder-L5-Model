@@ -86,8 +86,8 @@ class Stylized_Cell(object):
                     if len(pid) == 1:
                         pid = pid*nbranch
                 for i in range(nbranch):
-                    print('all:',list(self.all),'| pid[i]:',pid[i],'| psec:',list(self.all)[pid[i]])
-                    psec = list(self.all)[pid[i]]
+                    print('allsections:',self.allsections,'| pid[i]:',pid[i],'| psec:',self.allsections[pid[i]])
+                    psec = self.allsections[pid[i]]
                     pt0 = [psec.x3d(1), psec.y3d(1), psec.z3d(1)]
                     pt1[1] = pt0[1] + y
                     pt1[0] = pt0[0] + x * math.cos(i * rot)
