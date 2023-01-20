@@ -136,3 +136,98 @@ class SonataWriter:
         """Closes the h5py File
         """        
         self.file.close()
+        
+class Record_Axial_Current(object):
+    """A module for recording axial currents from section object to segments attached to section object"""
+    def __init__(self, section: nrn.Section, dend_type: Optional[str] = None, record_t: bool = False, single_seg: bool = False) -> None:
+        """
+        section: section object
+        dend_type: list of section names of the dendrite types that need to be recorded
+        record_t: whether or not to record time points
+        single_seg: whether or not to record only one segment for each dendrite type
+        """
+        self.section = section
+        if dend_type is None:
+            # import pdb; pdb.set_trace()
+            sec_names = [sec.name().split('.')[-1].split('[')[0] for sec in section.children()]
+            if section.parentseg() is not None: # check if section has a parent section
+              sec_names.append(section.parentseg().sec.name().split('.')[-1].split('[')[0]) #get name of parent section
+            self.dend_type = list(set(sec_names))
+        else:
+            self.dend_type = dend_type
+        self.dend = {};
+        # import pdb; pdb.set_trace()
+        for d in self.dend_type:
+            self.dend[d] = Adjacent_Section(self.section,d)
+        self.single_seg = single_seg
+        self.setup_recorder(record_t)
+        
+    
+    def setup_recorder(self, record_t: bool = False):
+        if record_t:
+            self.t_vec = h.Vector(round(h.tstop / h.dt) + 1).record(h._ref_t)
+        else:
+            self.t_vec = None
+        for dend in self.dend.values():
+            dend.setup_recorder(self.single_seg)
+    
+    def t(self):
+        if self.t_vec is None:
+            t = None
+        else:
+            t = self.t_vec.as_numpy().copy()
+        return t
+    
+    def get_current(self, dend_type: Optional[str] = None) -> np.ndarray:
+        if dend_type is None:
+            axial_current = {}
+            for name,dend in self.dend.items():
+                axial_current[name] = dend.get_current()
+        else:
+            axial_current = self.dend[dend_type].get_current()
+        return axial_current
+
+class Adjacent_Section(object):
+    """A module for recording and calculating axial current from the soma to its adjacent sections of a dendrite type"""
+    def __init__(self, section: nrn.Section, name: Optional[str] = 'dend') -> None:
+        """
+        section: section section object
+        name: section names of the dendrite type
+        """
+        self.name = name
+        self.section=section
+        #calculate section children seg to section seg
+        self.init_sec = [s for s in section.children() if name in s.name()] #get array of section children and check if they are in the sec_names list
+
+        if (section.parentseg() is not None):
+          if (name == section.parentseg().sec.name().split('.')[-1].split('[')[0]): # In this case we have passed no children sections and the name of the parent section is passed
+            self.init_sec = [section.parentseg().sec] #set parent section as initial section
+            self.init_seg= section.parentseg() # set inital segment as parent segment
+        # import pdb; pdb.set_trace()
+        self.nseg = [s.nseg for s in self.init_sec]
+        self.init_seg = [s(0.5/n) for s,n in zip(self.init_sec,self.nseg)] #calculate middle of the first segment in the section for every child section
+        # #calculate section to parent section
+        # self.parent_seg=section.parentseg()
+        # self.first_seg=section(0.5/section.nseg)
+    
+    def setup_recorder(self, single_seg: bool = False):
+        self.pre_seg = [s.parentseg() for s in self.init_sec]
+        if (self.section.parentseg() is not None):
+          if self.init_sec == [self.section.parentseg().sec]: #if parent section
+            self.pre_seg = [self.section((1+((1-self.section.nseg)/self.section.nseg))/2)] #set pre_seg to last segment of section
+        if len(set(self.pre_seg)) == 1 and len(self.pre_seg)>1:
+            self.pre_seg = [self.pre_seg[0]]
+        if single_seg:
+            self.init_seg = [self.init_seg[0]]
+        self.pre_v = Recorder(self.pre_seg)
+        self.post_v = Recorder(self.init_seg)
+    
+    def get_current(self) -> np.ndarray:
+        v_pre = self.pre_v.as_numpy()
+        v_post = self.post_v.as_numpy()
+        axial_r = np.array([[seg.ri()] for seg in self.init_seg])
+        if (self.section.parentseg() is not None):
+          if self.init_sec == [self.section.parentseg().sec]: #in the case of section connected to parent section:
+            axial_r= np.array([[seg.ri()] for seg in self.pre_seg]) #ri() calculates from seg to parentseg() so adjust to go from pre_seg to init_seg rather than init_seg to pre_seg
+        axial_current = (v_pre-v_post)/axial_r
+        return axial_current
