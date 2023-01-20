@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 import scipy.signal as ss
 import neuron as nrn
-__all__ = ['lognormal', 'normalize', 'make_noise', 'shift_exc_noise', 'SonataWriter','Record_Axial_Current']
+__all__ = ['lognormal', 'normalize', 'make_noise', 'shift_exc_noise', 'SonataWriter'] #Record_Axial_current import not working
 #Additional functions
 def lognormal(m, s):
     """get underlying normal distribution parameters from lognormal distribution parameters"""
