@@ -3,6 +3,14 @@ import numpy as np
 import scipy.signal as ss
 
 #Additional functions
+def lognormal(m, s):
+    """get underlying normal distribution parameters from lognormal distribution parameters"""
+    mean = np.log(m) - 0.5 * np.log((s/m)**2+1)
+    std = np.sqrt(np.log((s/m)**2 + 1))
+    #return max(np.random.lognormal(mean, std, 1), 0.00000001)
+    return mean, std
+
+
 def normalize(x):
     """normalizes the given array"""
     return (x - np.min(x))/(np.max(x)-np.min(x))
