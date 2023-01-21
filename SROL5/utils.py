@@ -358,7 +358,7 @@ def make_seg_df(cell, filename=None):
 
 
     numSyn = len(cell.injection)
-    nseg = len(sim.cells[0].segments)
+    nseg = len(cell.segments)
     excSynPerSeg = [0]*nseg
     inhSynPerSeg = [0]*nseg
     excSynPerSegL = [0]*nseg
@@ -370,7 +370,7 @@ def make_seg_df(cell, filename=None):
 
     i_NMDA_bySeg= [[0] * (numTstep+1) ] * nseg
 
-    #print(len(sim.cells[0].injection))
+    #print(len(cell.injection))
 
     for j in range(numSyn):
       seg = cell.injection[j].get_segment_id() 
