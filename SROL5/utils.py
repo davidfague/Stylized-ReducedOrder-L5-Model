@@ -261,7 +261,7 @@ def make_seg_df(cell, filename=None):
         filename='ReducedSegmentDegrees.csv'
     try: secdegrees=pd.read_csv(filename)
     except: print(filename, 'not in directory. Try another filename kwarg or add the file to the directory')
-    df = pd.DataFrame()
+    segs_df = pd.DataFrame()
     i = 0
     j = 0
     sec_types_bysec=[]
@@ -332,6 +332,8 @@ def make_seg_df(cell, filename=None):
               #get parentseg coordinates or something to identify parentseg by
             j += 1
             segments.append(seg)
+            segments_type.append(sec_type)
+            segments_distance.append(h.distance
         sec_types_bysec.append(sec_type)
         i += 1
         sections.append(sec)
@@ -375,8 +377,8 @@ def make_seg_df(cell, filename=None):
     for j in range(numSyn):
       seg = cell.injection[j].get_segment_id() 
       SynParentSeg.append(seg)
-      SynType.append(AllSegType[seg])
-      SynDist.append(AllSegDist[seg])
+      SynType.append(segments_type[seg])
+      SynDist.append(distances[seg])
 
       if(cell.injection[j].syntype == 'exc'):
         excSynPerSeg[seg] += 1
@@ -384,28 +386,28 @@ def make_seg_df(cell, filename=None):
       else:
         inhSynPerSeg[seg] += 1
         SourcePop.append('dist_inh_stim')
-    df["segmentID"] = seg_ids
-    df["BMTK ID"] = bmtk_ids
-    df["Seg_L"] = seg_lens
-    df["Seg_diam"] = segdiams
-    df["X"] = xs
-    df["Type"] = parts
-    df["Sec ID"] = sec_ids
-    df["Distance"] = distances
-    df["Section_L"] = lens
-    df["Section_diam"] = diams
-    df["Section_nseg"] = nsegs
-    df["Section_Ra"] = RAs
-    df["Coord X"] = AllSegXCoord
-    df["Coord Y"] = AllSegYCoord
-    df["Coord Z"] = AllSegZCoord
-    df["ParentSegID"] = psegids
-    df["Elec_distance"] = elec_distances
-    df["Elec_distance_nexus"] = elec_distances
-    df["Sec Name"] = fullsecnames
-    df['Degrees']=seg_degrees
-    df['num_syns_exc']=excSynPerSeg
-    df['num_syns_inh']=inhSynPerSeg
+    segs_df["segmentID"] = seg_ids
+    segs_df["BMTK ID"] = bmtk_ids
+    segs_df["Seg_L"] = seg_lens
+    segs_df["Seg_diam"] = segdiams
+    segs_df["X"] = xs
+    segs_df["Type"] = parts
+    segs_df["Sec ID"] = sec_ids
+    segs_df["Distance"] = distances
+    segs_df["Section_L"] = lens
+    segs_df["Section_diam"] = diams
+    segs_df["Section_nseg"] = nsegs
+    segs_df["Section_Ra"] = RAs
+    segs_df["Coord X"] = AllSegXCoord
+    segs_df["Coord Y"] = AllSegYCoord
+    segs_df["Coord Z"] = AllSegZCoord
+    segs_df["ParentSegID"] = psegids
+    segs_df["Elec_distance"] = elec_distances
+    segs_df["Elec_distance_nexus"] = elec_distances
+    segs_df["Sec Name"] = fullsecnames
+    segs_df['Degrees']=seg_degrees
+    segs_df['num_syns_exc']=excSynPerSeg
+    segs_df['num_syns_inh']=inhSynPerSeg
 
 
-    df.to_csv("ReducedSegments.csv", index=False)
+    segs_df.to_csv("ReducedSegments.csv", index=False)
