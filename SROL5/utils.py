@@ -368,7 +368,7 @@ def make_seg_df(cell, filename=None):
     SynType = []
     SynDist = []
 
-    i_NMDA_bySeg= [[0] * (numTstep+1) ] * nseg
+    i_NMDA_bySeg= [[0] * (int(h.tstop/h.dt)+1) ] * nseg
 
     #print(len(cell.injection))
 
