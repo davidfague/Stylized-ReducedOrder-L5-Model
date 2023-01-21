@@ -3,6 +3,7 @@ import numpy as np
 import scipy.signal as ss
 import neuron as nrn
 from stylized_module.recorder import Recorder
+from nrn import h
 
 #Additional functions
 def lognormal(m, s):
@@ -407,7 +408,3 @@ def make_seg_df(cell, filename=None):
 
 
     df.to_csv("ReducedSegments.csv", index=False)
-try:
-  os.remove("ReducedSegments.csv")
-except:
-  print('No ReducedL5Segments.csv to remove.')
