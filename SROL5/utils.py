@@ -140,7 +140,7 @@ class SonataWriter:
         
 class Record_Axial_Current(object):
     """A module for recording axial currents from section object to segments attached to section object"""
-    def __init__(self, section, dend_type = None, record_t: bool = False, single_seg: bool = False) -> None:
+    def __init__(self, section, dend_type: str = None, record_t: bool = False, single_seg: bool = False) -> None:
         """
         section: section object
         dend_type: list of section names of the dendrite types that need to be recorded
@@ -179,7 +179,7 @@ class Record_Axial_Current(object):
             t = self.t_vec.as_numpy().copy()
         return t
     
-    def get_current(self, dend_type: Optional[str] = None) -> np.ndarray:
+    def get_current(self, dend_type: str = None) -> np.ndarray:
         if dend_type is None:
             axial_current = {}
             for name,dend in self.dend.items():
@@ -190,7 +190,7 @@ class Record_Axial_Current(object):
 
 class Adjacent_Section(object):
     """A module for recording and calculating axial current from the soma to its adjacent sections of a dendrite type"""
-    def __init__(self, section: nrn.Section, name: Optional[str] = 'dend') -> None:
+    def __init__(self, section, name: str = 'dend') -> None:
         """
         section: section section object
         name: section names of the dendrite type
