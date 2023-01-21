@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import scipy.signal as ss
 import neuron as nrn
+from stylized_module.recorder import Recorder
 
 #Additional functions
 def lognormal(m, s):
