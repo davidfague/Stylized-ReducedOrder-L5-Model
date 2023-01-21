@@ -233,3 +233,181 @@ class Adjacent_Section(object):
             axial_r= np.array([[seg.ri()] for seg in self.pre_seg]) #ri() calculates from seg to parentseg() so adjust to go from pre_seg to init_seg rather than init_seg to pre_seg
         axial_current = (v_pre-v_post)/axial_r
         return axial_current
+def save_degrees(cell):
+    degrees = {}
+    calculate_degree(h.SectionRef(sec=cell.soma), degrees, 0)
+
+    df_dict = {}
+    df_dict["SectionName"] = list(degrees.keys())
+    df_dict["Degrees"] = list(degrees.values())
+    
+    df = pd.DataFrame(df_dict)
+    try:
+      os.remove("ReducedSegmentDegrees.csv")
+    except:
+      print('No ReducedSegmentDegrees.csv to remove.')
+    df.to_csv("ReducedSegmentDegrees.csv", index=False)
+
+def calculate_degree(sref, degrees, deg):
+    degrees[sref.sec.name()] = deg
+
+    for c in sref.child:
+        calculate_degree(h.SectionRef(sec=c), degrees, deg+1)
+
+def make_seg_df(cell, filename=None):
+    if filename==None:
+        filename='ReducedSegmentDegrees.csv'
+    try: secdegrees=pd.read_csv(filename)
+    except: print(filename, 'not in directory. Try another filename kwarg or add the file to the directory')
+    df = pd.DataFrame()
+    i = 0
+    j = 0
+    sec_types_bysec=[]
+    lens = []
+    seg_lens = []
+    diams = []
+    segdiams = []
+    bmtk_ids = []
+    seg_ids = []
+    sec_ids = []
+    full_names = []
+    xs = []
+    parts = []
+    distances = []
+    elec_distances = []
+    elec_distances_nexus = []
+    h.distance(sec=cell.all[0])
+    nsegs=[]
+    RAs=[]
+    Parentx=[]
+    zz = h.Impedance()
+    zz.loc(cell.all[0](0.5))
+    zz.compute(25)
+    ww = h.Impedance()
+    ww.loc(cell.all[19](0.5)) #disttrunk
+    ww.compute(25)
+    psegids=[]
+    segments=[]
+    sections=[]
+    fullsecnames=[]
+    seg_degrees=[]
+    apic = ['proxtrunk','midtrunk','disttrunk','proxtuft','midtuft','disttuft','oblique']
+    dend = ['proxbasal','midbasal','distbasal']
+
+    for sec in cell.all:
+        print(sec.name)
+        for seg in sec:
+
+            lens.append(seg.sec.L)
+            seg_lens.append(seg.sec.L/seg.sec.nseg)
+            diams.append(seg.sec.diam)
+            segdiams.append(seg.diam)
+            distances.append(h.distance(seg))
+            bmtk_ids.append(i)
+            seg_ids.append(j)
+            xs.append(seg.x)
+            fullsecname = sec.name()
+            fullsecnames.append(fullsecname)
+            degree=secdegrees.loc[secdegrees.SectionName==fullsecname]['Degrees']
+            seg_degrees.append(int(degree))
+            if str(fullsecname)=='soma':
+              sec_type = 'soma'
+            elif str(fullsecname) in apic:
+              sec_type = 'apic'
+            elif str(fullsecname) in dend:
+              sec_type = 'dend'
+            else:
+              sec_type = str(fullsecname)
+            sec_id=sec_types_bysec.count(sec_type)
+            sec_ids.append(sec_id)
+            nsegs.append(seg.sec.nseg)
+            RAs.append(seg.sec.Ra)
+            parts.append(sec_type)
+            full_names.append(str(seg))
+            elec_distances.append(zz.ratio(seg))
+            elec_distances_nexus.append(ww.ratio(seg))
+            #if seg.sec.parentseg() is not None:
+              #get parentseg coordinates or something to identify parentseg by
+            j += 1
+            segments.append(seg)
+        sec_types_bysec.append(sec_type)
+        i += 1
+        sections.append(sec)
+    #print(segments)
+    for i in range(len(segments)): #calculate parentseg id using seg index on section
+      idx = int(np.floor(segments[i].x * segments[i].sec.nseg)) #get seg index on section
+      #case where segment is not first segment on section:
+      if idx != 0: #if the segment is not the first on the section then the parent segment is the previous segment index
+        psegid=i-1 #set parent segment id to the previous segment index
+        psegids.append(psegid)
+      #case where segment is first segment on section:
+      else:
+        pseg = segments[i].sec.parentseg()
+        if pseg == None:
+          psegids.append(None)
+        else:
+          psec=pseg.sec
+          nseg = psec.nseg
+          pidx = int(np.floor(pseg.x * nseg)) #get parent seg index on section
+          if pseg.x == 1.:
+            pidx -= 1
+          psegid=segments.index(psec((pidx + .5) / nseg)) #find the segment id of the parent seg by comparing with segment list after calculating the parent seg's section(x)
+          psegids.append(psegid)
+
+
+    numSyn = len(cell.injection)
+    nseg = len(sim.cells[0].segments)
+    excSynPerSeg = [0]*nseg
+    inhSynPerSeg = [0]*nseg
+    excSynPerSegL = [0]*nseg
+    inhSynPerSegL = [0]*nseg
+    SynParentSeg = []
+    SourcePop = []
+    SynType = []
+    SynDist = []
+
+    i_NMDA_bySeg= [[0] * (numTstep+1) ] * nseg
+
+    #print(len(sim.cells[0].injection))
+
+    for j in range(numSyn):
+      seg = cell.injection[j].get_segment_id() 
+      SynParentSeg.append(seg)
+      SynType.append(AllSegType[seg])
+      SynDist.append(AllSegDist[seg])
+
+      if(cell.injection[j].syntype == 'exc'):
+        excSynPerSeg[seg] += 1
+        SourcePop.append('exc_stim')
+      else:
+        inhSynPerSeg[seg] += 1
+        SourcePop.append('dist_inh_stim')
+    df["segmentID"] = seg_ids
+    df["BMTK ID"] = bmtk_ids
+    df["Seg_L"] = seg_lens
+    df["Seg_diam"] = segdiams
+    df["X"] = xs
+    df["Type"] = parts
+    df["Sec ID"] = sec_ids
+    df["Distance"] = distances
+    df["Section_L"] = lens
+    df["Section_diam"] = diams
+    df["Section_nseg"] = nsegs
+    df["Section_Ra"] = RAs
+    df["Coord X"] = AllSegXCoord
+    df["Coord Y"] = AllSegYCoord
+    df["Coord Z"] = AllSegZCoord
+    df["ParentSegID"] = psegids
+    df["Elec_distance"] = elec_distances
+    df["Elec_distance_nexus"] = elec_distances
+    df["Sec Name"] = fullsecnames
+    df['Degrees']=seg_degrees
+    df['num_syns_exc']=excSynPerSeg
+    df['num_syns_inh']=inhSynPerSeg
+
+
+    df.to_csv("ReducedSegments.csv", index=False)
+try:
+  os.remove("ReducedSegments.csv")
+except:
+  print('No ReducedL5Segments.csv to remove.')
