@@ -140,7 +140,7 @@ class SonataWriter:
         
 class Record_Axial_Current(object):
     """A module for recording axial currents from section object to segments attached to section object"""
-    def __init__(self, section, dend_type: Optional[str] = None, record_t: bool = False, single_seg: bool = False) -> None:
+    def __init__(self, section, dend_type = None, record_t: bool = False, single_seg: bool = False) -> None:
         """
         section: section object
         dend_type: list of section names of the dendrite types that need to be recorded
