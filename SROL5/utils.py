@@ -4,6 +4,7 @@ import scipy.signal as ss
 import neuron as nrn
 from stylized_module.recorder import Recorder
 from neuron import h
+import pandas as pd
 
 #Additional functions
 def lognormal(m, s):
