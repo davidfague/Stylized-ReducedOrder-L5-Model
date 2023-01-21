@@ -321,6 +321,8 @@ def make_seg_df(cell, filename=None):
             else:
               sec_type = str(fullsecname)
             sec_id=sec_types_bysec.count(sec_type)
+            print('count(sec_type):',sec_id)
+            # try if not correct sec_id= sec_types_bysec.count()
             sec_ids.append(sec_id)
             nsegs.append(seg.sec.nseg)
             RAs.append(seg.sec.Ra)
