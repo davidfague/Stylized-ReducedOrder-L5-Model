@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal as ss
 import neuron as nrn
 from stylized_module.recorder import Recorder
-from nrn import h
+from neuron import h
 
 #Additional functions
 def lognormal(m, s):
