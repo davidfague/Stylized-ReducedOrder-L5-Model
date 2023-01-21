@@ -335,7 +335,7 @@ def make_seg_df(cell, filename=None):
             j += 1
             segments.append(seg)
             segments_type.append(sec_type)
-            segments_distance.append(h.distance
+            segments_distance.append(h.distance)
         sec_types_bysec.append(sec_type)
         i += 1
         sections.append(sec)
