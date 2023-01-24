@@ -1,3 +1,5 @@
+import matplotlib as plt
+
 def get_probe(probe):
   name=str(probe.sectionname)+str(probe.sectionindex)
   segment=probe.seg
