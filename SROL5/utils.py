@@ -284,6 +284,9 @@ def make_seg_df(cell, filename=None):
     nsegs=[]
     RAs=[]
     Parentx=[]
+    AllSegXCoord = []
+    AllSegYCoord = []
+    AllSegZCoord = []
     zz = h.Impedance()
     zz.loc(cell.all[0](0.5))
     zz.compute(25)
@@ -299,7 +302,11 @@ def make_seg_df(cell, filename=None):
     dend = ['proxbasal','midbasal','distbasal']
 
     for sec in cell.all:
-        print(sec.name)
+        xCoords,yCoords,zCoords=find_seg_coords(sec)
+        AllSegXCoord.extend(xCoords)
+        AllSegYCoord.extend(yCoords)
+        AllSegZCoord.extend(zCoords)
+        #print(sec.name)
         for seg in sec:
 
             lens.append(seg.sec.L)
@@ -415,3 +422,49 @@ def make_seg_df(cell, filename=None):
 
 
     segs_df.to_csv("ReducedSegments.csv", index=False)
+
+def find_seg_coords(section):
+    # Get section 3d coordinates and put in numpy array
+    n3d = section.n3d()
+    x3d = np.empty(n3d)
+    y3d = np.empty(n3d)
+    z3d = np.empty(n3d)
+    L = np.empty(n3d)
+    for i in range(n3d):
+        x3d[i]=section.x3d(i)
+        y3d[i]=section.y3d(i)
+        z3d[i]=section.z3d(i)
+
+    # Compute length of each 3d segment
+    for i in range(n3d):
+        if i==0:
+            L[i]=0
+        else:
+            L[i]=np.sqrt((x3d[i]-x3d[i-1])**2 + (y3d[i]-y3d[i-1])**2 + (z3d[i]-z3d[i-1])**2)
+
+    # Get cumulative length of 3d segments
+    cumLength = np.cumsum(L)
+    N = section.nseg
+    # Now upsample coordinates to segment locations
+    xCoord = np.empty(N)
+    yCoord = np.empty(N)
+    zCoord = np.empty(N)
+    dist = np.empty(N) 
+    if N > 1:
+      dx = section.L / (N-1)
+    else:
+      dx = section.L
+    for n in range(N):
+      if n==(N-1): 
+          xCoord[n]=x3d[-1]
+          yCoord[n]=y3d[-1]
+          zCoord[n]=z3d[-1]
+      else:
+          cIdxStart = np.where(n*dx >= cumLength)[0][-1] # which idx of 3d segments are we starting at
+          cDistFrom3dStart = n*dx - cumLength[cIdxStart] # how far along that segment is this upsampled coordinate
+          cFraction3dLength = cDistFrom3dStart / L[cIdxStart+1] # what's the fractional distance along this 3d segment
+          # compute x and y positions
+          xCoord[n] = x3d[cIdxStart] + cFraction3dLength*(x3d[cIdxStart+1] - x3d[cIdxStart])
+          yCoord[n] = y3d[cIdxStart] + cFraction3dLength*(y3d[cIdxStart+1] - y3d[cIdxStart])
+          zCoord[n] = z3d[cIdxStart] + cFraction3dLength*(z3d[cIdxStart+1] - z3d[cIdxStart])
+    return xCoord, yCoord, zCoord
