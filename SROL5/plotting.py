@@ -1,4 +1,4 @@
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def get_probe(probe):
   name=str(probe.sectionname)+str(probe.sectionindex)
