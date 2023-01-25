@@ -235,7 +235,7 @@ class Adjacent_Section(object):
             axial_r= np.array([[seg.ri()] for seg in self.pre_seg]) #ri() calculates from seg to parentseg() so adjust to go from pre_seg to init_seg rather than init_seg to pre_seg
         axial_current = (v_pre-v_post)/axial_r
         return axial_current
-def save_degrees(cell):
+def save_degrees(cell, degrees_filename='ReducedSegmentDegrees.csv'):
     degrees = {}
     calculate_degree(h.SectionRef(sec=cell.soma), degrees, 0)
 
@@ -245,10 +245,10 @@ def save_degrees(cell):
     
     df = pd.DataFrame(df_dict)
     try:
-      os.remove("ReducedSegmentDegrees.csv")
+      os.remove(degrees_filename)
     except:
-      print('No ReducedSegmentDegrees.csv to remove.')
-    df.to_csv("ReducedSegmentDegrees.csv", index=False)
+      print(degrees_filename, 'not already in directory. Creating file now.')
+    df.to_csv(degrees_filename, index=False)
 
 def calculate_degree(sref, degrees, deg):
     degrees[sref.sec.name()] = deg
@@ -256,11 +256,9 @@ def calculate_degree(sref, degrees, deg):
     for c in sref.child:
         calculate_degree(h.SectionRef(sec=c), degrees, deg+1)
 
-def make_seg_df(cell, filename=None):
-    if filename==None:
-        filename='ReducedSegmentDegrees.csv'
-    try: secdegrees=pd.read_csv(filename)
-    except: print(filename, 'not in directory. Try another filename kwarg or add the file to the directory')
+def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filename="ReducedSegments.csv"):
+    try: secdegrees=pd.read_csv(degrees_filename)
+    except: print(degrees_filename, 'not in directory. Try another filename kwarg or add the file to the directory')
     segs_df = pd.DataFrame()
     i = 0
     j = 0
@@ -419,9 +417,8 @@ def make_seg_df(cell, filename=None):
     segs_df['Degrees']=seg_degrees
     segs_df['num_syns_exc']=excSynPerSeg
     segs_df['num_syns_inh']=inhSynPerSeg
-
-
-    segs_df.to_csv("ReducedSegments.csv", index=False)
+    
+    segs_df.to_csv(segs_filename, index=False)
 
 def find_seg_coords(section):
     # Get section 3d coordinates and put in numpy array
