@@ -4,7 +4,8 @@ from neuron import h
 
 def save_degrees(cell):
     degrees = {}
-    calculate_degree(h.SectionRef(sec=cell.hobj.soma[0]), degrees, 0)
+    try:calculate_degree(h.SectionRef(sec=cell.hobj.soma[0]), degrees, 0)
+    except:calculate_degree(h.SectionRef(sec=cell.soma[0]), degrees, 0)
 
     df_dict = {}
     df_dict["SectionName"] = list(degrees.keys())
