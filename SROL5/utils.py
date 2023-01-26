@@ -237,7 +237,8 @@ class Adjacent_Section(object):
         return axial_current
 def save_degrees(cell, degrees_filename='ReducedSegmentDegrees.csv'):
     degrees = {}
-    calculate_degree(h.SectionRef(sec=cell.soma), degrees, 0)
+    try:calculate_degree(h.SectionRef(sec=cell.soma), degrees, 0)
+        except:calculate_degree(h.SectionRef(sec=cell.soma[0]), degrees, 0)
 
     df_dict = {}
     df_dict["SectionName"] = list(degrees.keys())
