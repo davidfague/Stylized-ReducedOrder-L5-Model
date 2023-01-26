@@ -279,7 +279,8 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
     segments_type = []
     segments_distance = []
     elec_distances_nexus = []
-    h.distance(sec=cell.all[0])
+    try:h.distance(sec=cell.soma)
+    except:h.distance(sec=cell.soma[0]
     nsegs=[]
     RAs=[]
     Parentx=[]
@@ -287,11 +288,12 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
     AllSegYCoord = []
     AllSegZCoord = []
     zz = h.Impedance()
-    zz.loc(cell.all[0](0.5))
+    try:zz.loc(cell.soma(0.5))
+    except:zz.loc(cell.soma[0](0.5)
     zz.compute(25)
-    ww = h.Impedance()
-    ww.loc(cell.all[19](0.5)) #disttrunk
-    ww.compute(25)
+#     ww = h.Impedance()
+#     ww.loc(cell.all[19](0.5)) #disttrunk
+#     ww.compute(25)
     psegids=[]
     segments=[]
     sections=[]
@@ -337,7 +339,7 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
             parts.append(sec_type)
             full_names.append(str(seg))
             elec_distances.append(zz.ratio(seg))
-            elec_distances_nexus.append(ww.ratio(seg))
+#             elec_distances_nexus.append(ww.ratio(seg))
             #if seg.sec.parentseg() is not None:
               #get parentseg coordinates or something to identify parentseg by
             j += 1
