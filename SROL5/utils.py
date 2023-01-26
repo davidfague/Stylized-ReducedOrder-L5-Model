@@ -279,7 +279,7 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
     segments_type = []
     segments_distance = []
     elec_distances_nexus = []
-    sref=h.SectionRef(sec=cell.soma[0])
+    sref=h.SectionRef(sec=cell.soma)
     try:h.distance(sec=sref.sec)
     except:h.distance(sec=cell.soma)
     nsegs=[]
