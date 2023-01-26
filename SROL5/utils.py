@@ -333,7 +333,7 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
             else:
               sec_type = str(fullsecname)
             sec_id=sec_types_bysec.count(sec_type)
-            print('count(sec_type):',sec_id)
+#             print('count(sec_type):',sec_id)
             # try if not correct sec_id= sec_types_bysec.count()
             sec_ids.append(sec_id)
             nsegs.append(seg.sec.nseg)
