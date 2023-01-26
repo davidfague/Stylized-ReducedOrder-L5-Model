@@ -279,8 +279,10 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
     segments_type = []
     segments_distance = []
     elec_distances_nexus = []
-    try:h.distance(sec=h.SectionRef(cell.soma[0]))
-    except:h.distance(sec=h.SectionRef(cell.soma))
+    try:soma = cell.soma[0]
+    except: soma = cell.all[0]
+    try:h.distance(sec=soma)
+    except:h.distance(sec=soma)
     nsegs=[]
     RAs=[]
     Parentx=[]
@@ -288,8 +290,8 @@ def make_seg_df(cell, degrees_filename='ReducedSegmentDegrees.csv', segs_filenam
     AllSegYCoord = []
     AllSegZCoord = []
     zz = h.Impedance()
-    try:zz.loc(h.SectionRef(cell.soma)(0.5))
-    except:zz.loc(h.SectionRef(cell.soma[0])(0.5))
+    try:zz.loc(soma(0.5))
+    except:zz.loc(soma(0.5))
     zz.compute(25)
 #     ww = h.Impedance()
 #     ww.loc(cell.all[19](0.5)) #disttrunk
