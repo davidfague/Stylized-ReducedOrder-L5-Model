@@ -72,7 +72,7 @@ class Stylized_Cell(object):
                 pt1 = [0., 0., 0.]
                 soma = self.__create_section(name=sec['name'], diam=2 * r0,sectype=sec['type'])
                 self.soma.append(soma)
-                self.__set_location(self.soma, pt0, pt1, 1)
+                self.__set_location(self.soma[0], pt0, pt1, 1)
             else:
                 print('now attempting sec_id:',sec_id)
                 length = sec['L']
@@ -101,7 +101,7 @@ class Stylized_Cell(object):
                     section.connect(psec(1), 0)
                     self.__set_location(section, pt0, pt1, nseg)
             self.sec_id_lookup[sec_id] = list(range(start_idx, self._nsec))
-        self.__set_location(self.soma, [0., -r0, 0.], [0., r0, 0.], 1)
+        self.__set_location(self.soma[0], [0., -r0, 0.], [0., r0, 0.], 1)
         self.__store_segments()
 
     def __create_section(self,name='null_sec',diam=500.0,sectype=int,nbranch_index=int):
@@ -178,7 +178,7 @@ class Stylized_Cell(object):
             self._record_spike = False
         else:
             vec = h.Vector()
-            nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma)
+            nc = h.NetCon(self.soma[0](0.5)._ref_v, None, sec=self.soma[0])
             nc.threshold = threshold
             nc.record(vec)
             self.spikes = vec
