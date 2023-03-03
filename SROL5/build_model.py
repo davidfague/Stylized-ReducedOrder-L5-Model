@@ -728,7 +728,7 @@ class Simulation(object):
         # add injection current or synaptic current and set up lfp recording
         min_dist = 10.0 # minimum distance allowed between segment and electrode. Set to None if not using.
         for i,cell in enumerate(self.cells):
-            self.lfp.append( EcpMod(cell,self.electrodes,move_cell=self.loc_param[i],scale=self.scale[i],min_distance=min_dist) )
+#             self.lfp.append( EcpMod(cell,self.electrodes,move_cell=self.loc_param[i],scale=self.scale[i],min_distance=min_dist) )
             #Current injection in soma
             # cell.add_injection(sec_index=19,record=True,delay=150,dur=150,amp=0.1) # Tune for proper action potential
             if RunType == 'Active Properties':
