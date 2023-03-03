@@ -108,7 +108,7 @@ class Stylized_Cell(object):
             sec = h.Section(name=name)
             sec.diam = diam
             self.apical.append(sec)
-            self.apic.apend(sec)
+            self.apic.append(sec)
         elif sectype==3:
             name=name+'['+str(nbranch_index)+'].'+'dend['+str(len(list(self.basal)))+']'
             sec = h.Section(name=name)
