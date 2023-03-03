@@ -573,7 +573,7 @@ def create_reduced_cell(soma_cable,
 
     create_sections_in_hoc("soma", 1, "reduced_cell")
 
-    soma = original_cell.soma
+    soma = original_cell.soma[0]
       
     append_to_section_lists("soma[0]", "somatic", "reduced_cell")
 
