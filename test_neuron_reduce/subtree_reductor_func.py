@@ -691,9 +691,9 @@ def merge_and_add_synapses(num_of_subtrees,
                 if synapse_properties_match(synapse, PP, PP_params_dict):
                     netcons_list[syn_index].setpost(PP)
                     break
-            else:  # If for finish the loop -> first appearance of this synapse
-#                 print("x:",x,"|section_for_synapse:",section_for_synapse) 
+            else:  # If for finish the loop -> first appearance of this synapse 
                 x=Decimal(str(x)) # patch error for passing float to synapse.loc
+                print("x:",x,"type:",type(x),"|section_for_synapse:",section_for_synapse,"type:",type(section_for_synapse))
                 synapse.loc(x, sec=section_for_synapse)
                 new_synapses_list.append(synapse)
 
