@@ -33,6 +33,7 @@ class Stylized_Cell(object):
         self.apic = []
         self.dend = []
         self.axon = []
+        self.soma = []
         self.segments = []  # list of all segments
         self.sec_id_lookup = {} # dictionary from section type id to section index
         self.sec_id_in_seg = []
@@ -69,7 +70,8 @@ class Stylized_Cell(object):
                 r0 = sec['R']
                 pt0 = [0., -2 * r0, 0.]
                 pt1 = [0., 0., 0.]
-                self.soma = self.__create_section(name=sec['name'], diam=2 * r0,sectype=sec['type'])
+                soma = self.__create_section(name=sec['name'], diam=2 * r0,sectype=sec['type'])
+                self.soma.append(soma)
                 self.__set_location(self.soma, pt0, pt1, 1)
             else:
                 print('now attempting sec_id:',sec_id)
