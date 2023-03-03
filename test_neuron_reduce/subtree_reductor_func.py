@@ -691,7 +691,8 @@ def merge_and_add_synapses(num_of_subtrees,
                     netcons_list[syn_index].setpost(PP)
                     break
             else:  # If for finish the loop -> first appearance of this synapse
-                synapse.loc(x, sec=section_for_synapse)
+              print("x:",x,"|sec:",sec)  
+              synapse.loc(x, sec=section_for_synapse)
                 new_synapses_list.append(synapse)
 
     # merging somatic and axonal synapses
