@@ -67,7 +67,7 @@ class Cell(Stylized_Cell):
             sec.insert('pas')
             sec.e_pas = self._vrest
         # fixed parameters
-        soma = self.soma
+        soma = self.soma[0]
         soma.cm = 1.0           # Originally 1 
         soma.insert('NaTa_t')  # Sodium channel
         soma.insert('SKv3_1')  # Potassium channel
@@ -250,7 +250,7 @@ class Cell(Stylized_Cell):
  
 
     def record_soma_v(self):
-        self.v_rec = Recorder(self.soma(.5),'v')
+        self.v_rec = Recorder(self.soma[0](.5),'v')
     
     def v(self):
         """Return recorded soma membrane voltage in numpy array"""
