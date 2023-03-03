@@ -611,7 +611,7 @@ def create_reduced_cell(soma_cable,
 
     # create cell python template
     cell = Neuron(h.reduced_cell)
-    cell.soma = original_cell.soma
+    cell.soma = original_cell.soma[0]
     cell.apic = apic
 
     return cell, basals
@@ -785,7 +785,7 @@ def subtree_reductor(original_cell,
     model_obj_name = load_model(model_filename)
 
     # finds soma properties
-    soma = original_cell.soma
+    soma = original_cell.soma[0]
 
     soma_cable = CableParams(length=soma.L, diam=soma.diam, space_const=None,
                              cm=soma.cm, rm=1.0 / soma.g_pas, ra=soma.Ra, e_pas=soma.e_pas,
