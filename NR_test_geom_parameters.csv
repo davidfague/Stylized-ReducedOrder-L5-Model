@@ -1,0 +1,4 @@
+id,name,type,pid,axial,nbranch,L,R,ang,excitation,inhibition,excFRmean,excFRstd,excP_0mean,excP_0std,exc_dens,inhFRmean,inhFRstd,inhP_0mean,inhP_0std,inh_dens,rhythmic_inh
+0,soma,1,0,TRUE,1,0,10,0,FALSE,TRUE,4.43,2.9,0.53,0.22,1.16,16.9,14.3,0.88,0.5,0.22,FALSE
+1,proxtrunk,4,0,TRUE,1,1000,4,1.570796327,FALSE,TRUE,4.43,2.9,0.53,0.22,2.16,3.9,4.9,0.72,0.1,0.22,FALSE
+2,proxtuft,4,1,FALSE,4,100,1,1.309,TRUE,TRUE,4.43,2.9,0.53,0.22,2.16,3.9,4.9,0.3,0.08,0.22,TRUE
