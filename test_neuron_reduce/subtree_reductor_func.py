@@ -693,7 +693,7 @@ def merge_and_add_synapses(num_of_subtrees,
                     break
             else:  # If for finish the loop -> first appearance of this synapse 
                 x=Decimal(str(x)) # patch error for passing float to synapse.loc
-                print("x:",x,"type:",type(x),"|section_for_synapse:",section_for_synapse,"type:",type(section_for_synapse),"|synapse:",synapse,"type:",type(synapse))
+                #print("x:",x,"type:",type(x),"|section_for_synapse:",section_for_synapse,"type:",type(section_for_synapse),"|synapse:",synapse,"type:",type(synapse))
                 synapse.loc(x, sec=section_for_synapse)
                 new_synapses_list.append(synapse)
 
