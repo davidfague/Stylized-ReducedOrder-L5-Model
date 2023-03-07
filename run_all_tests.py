@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import os
 
-WRITE_UNIT_TEST_VECTORS = False
-PLOT_VOLTAGES = False
+WRITE_UNIT_TEST_VECTORS = True
+PLOT_VOLTAGES = True
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 TESTDATA_PATH = os.path.join(BASE_PATH, 'TestsFiles')
