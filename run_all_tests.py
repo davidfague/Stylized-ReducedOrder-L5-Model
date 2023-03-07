@@ -19,7 +19,22 @@ def run_reduce(morphology_file,
                plot_voltages=PLOT_VOLTAGES,
                reduced_model_file='model.hoc',
                manual_total_nsegs=-1):
-    args = ("python " +
+    # args = ("python " +
+    #         os.path.join(BASE_PATH, "test_script_helper.py ") +
+    #         ' '.join([str(a) for a in (morphology_file,
+    #                                    model_file,
+    #                                    reduced_model_file,
+    #                                    frequency,
+    #                                    manual_total_nsegs,
+    #                                    synapse_file,
+    #                                    voltage_file,
+    #                                    write_unit_test_vectors,
+    #                                    plot_voltages,
+    #                                    create_type,
+    #                                    celsius)]))
+
+    # change python to %run for google colab
+    args = ("%run " +
             os.path.join(BASE_PATH, "test_script_helper.py ") +
             ' '.join([str(a) for a in (morphology_file,
                                        model_file,
