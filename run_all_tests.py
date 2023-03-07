@@ -5,7 +5,7 @@ WRITE_UNIT_TEST_VECTORS = True
 PLOT_VOLTAGES = True
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
-TESTDATA_PATH = os.path.join(BASE_PATH, 'TestsFiles')
+TESTDATA_PATH = os.path.join(BASE_PATH, 'tests')
 
 
 def run_reduce(morphology_file,
