@@ -32,6 +32,7 @@ def run_reduce(morphology_file,
                                        plot_voltages,
                                        create_type,
                                        celsius)]))
+    print(args)
     assert os.system(args) == 0
 
 
